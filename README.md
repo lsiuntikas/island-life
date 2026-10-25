@@ -97,21 +97,6 @@ It's a single self-contained page, so you can just open the file:
 
 You need an internet connection the first time, so the page can load Three.js and the fonts from a CDN.
 
-### Deploy to Vercel
-
-The easiest way is **Vercel Drop**, with no Git and no tools needed:
-
-1. Put `index.html` (and optionally `watch.html`) in a folder.
-2. Go to [vercel.com/drop](https://vercel.com/drop) and drag the folder onto the page.
-3. Pick a project name and press **Deploy**.
-
-To keep the same address when you update the game, either connect this GitHub repository to Vercel, or deploy from the command line:
-
-```bash
-npm i -g vercel
-vercel --prod
-```
-
 No framework or build settings are needed. Vercel serves the HTML file as it is.
 
 ---
@@ -151,12 +136,9 @@ The project started as a C# script for **Rhino 3D** (a single agent on an island
 
 ---
 
-## Ideas for the future
+## Todo
 
-- Islanders who sail to the second island on their own, to trade or settle.
 - Paths and roads that form where people walk most often.
-- Islanders who build and drive cars themselves.
-- Talking to islanders in natural language, with an AI model for conversations.
 
 ---
 
@@ -167,4 +149,4 @@ The project started as a C# script for **Rhino 3D** (a single agent on an island
 
 ## License
 
-Add the license of your choice here, for example MIT.
+MIT
