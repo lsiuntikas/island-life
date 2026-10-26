@@ -34,7 +34,7 @@ Each moment, every islander scores everything they could do and picks what seems
 ### Families and generations
 - A man and a woman who stay close friends for long enough become partners.
 - Healthy couples with a home can have children. Children follow and are fed by their parents, then grow up.
-- Old islanders die of old age and pass their house, boat and car to their partner or eldest child.
+- Old islanders die of old age and pass their house, boat, car and plane to their partner or eldest child.
 
 ### Crime and the labyrinth
 - **Murder:** killing someone who didn't attack you first makes you *wanted*.
@@ -66,13 +66,34 @@ Press **Play as someone**, or open any islander's card and press **Play as …**
 | **B** | Build or upgrade your home |
 | **N** | Build a boat at the shore; get in or out of your boat |
 | **U** | Build a car; get in or out of your car |
+| **P** | Build a plane; climb in or out of your plane |
 | **Q / R** | Eat from your bag / drink from your water skin |
 | **Z** | Sleep |
 | **X** | Stop what you're doing |
-| **Space** | Hard brake while driving |
+| **Space** | Hard brake while driving; take off and climb while flying |
 | **Esc** | Pause, choose time speed, or stop playing |
 
 Greyed-out actions always explain why they aren't possible yet, for example *"you need 4 more wood"*.
+
+### Flying
+
+Build a small high-wing propeller plane, painted in your colour, and fly it over the island or across the sea to the far island.
+
+- **Building:** gather **25 wood and 12 stone**, stand on flat dry ground and press **P**. The plane rises from the ground as you build it, and your progress is kept if you walk away.
+- **Taking off:** climb in with **P**, speed up along the ground with **W**, then hold **Space** once you're going fast enough.
+- **In the air:**
+
+  | Key | Action |
+  |---|---|
+  | **W / S** | More / less throttle |
+  | **A / D** | Turn (the plane banks into the turn) |
+  | **Space / Shift** | Climb / descend |
+  | **Mouse** | Look around |
+
+- **Speed:** flying too slowly makes you sink. The display shows your speed and height, and warns you before you stall.
+- **Landing:** slow down with **S** and descend with **Shift** over dry land. Coming in too fast bounces you back up, and you can't land on water. Once you've stopped, climb out with **P**.
+- **The view:** a chase camera follows from behind and above, so you see yourself at the controls with the island below.
+- **On phones:** the joystick steers and climbs while the engine holds a cruising speed, and **Run** flies faster.
 
 ### Controls (phone)
 - Joystick on the left to move, drag anywhere else to look.
