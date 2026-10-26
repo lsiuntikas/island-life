@@ -4,10 +4,6 @@ A tiny society that lives on its own. Watch a few dozen islanders survive, make 
 
 Everything runs in a single HTML file in the browser: no install, no build step, no server.
 
-> **Two versions**
-> - **`index.html`** (version 2): watch the island **and** play as any islander in first person.
-> - **`watch.html`** (version 1): the original watch-only simulation.
-
 ---
 
 ## What happens on the island
