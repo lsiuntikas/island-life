@@ -482,6 +482,7 @@ const PRICE = { food: 2, water: 2, wood: 1, stone: 1, fish: 2, sunberry: 4 };
 const GOODS = ['food', 'water', 'wood', 'stone', 'fish', 'sunberry'];
 const BOAT_WOOD = 8, BOAT_TICKS = 180, MAX_FISH = 6;
 const CAR_WOOD = 15, CAR_STONE = 10, CAR_TICKS = 240;
+const PLANE_WOOD = 25, PLANE_STONE = 12, PLANE_TICKS = 360;
 const MAX_FOOD = 3, MAX_WATER = 2;
 
 function rng(seed) {
@@ -862,6 +863,11 @@ class World {
   }
 
   passOnHouse(dead) {
+    if (dead.plane) {
+      const heir = [dead.partner, ...dead.children].find(c => c && c.alive && c.adult && !c.plane);
+      if (heir) { heir.plane = dead.plane; heir.plane.speed = 0; heir.plane.vy = 0; this.log(`${heir.name} inherits ${dead.name}’s plane.`, 'family'); }
+      dead.plane = null; dead.flying = false;
+    }
     if (dead.car) {
       const heir = [dead.partner, ...dead.children].find(c => c && c.alive && c.adult && !c.car);
       if (heir) { heir.car = dead.car; heir.car.speed = 0; this.log(`${heir.name} inherits ${dead.name}’s car.`, 'family'); }
@@ -939,6 +945,7 @@ class Agent {
     this.origin = 1; this.isle = w.isleOf(pos) || 1;   // born on island 1 or 2; island they're on now
     this.wanted = false; this.jailed = false; this.mazePos = null; this.crimes = 0;
     this.car = null; this.carSite = null; this.carWork = 0; this.driving = false;   // car: { x, y, z, h, speed }
+    this.plane = null; this.planeSite = null; this.planeWork = 0; this.flying = false;   // plane: { x, y, alt, h, speed, vy }
   }
 
   // ---------- state ----------
@@ -970,6 +977,7 @@ class Agent {
   get woodNeeded() { const p = this.project; return p ? Math.max(0, p.wood - this.inv.wood) : 0; }
   get stoneNeeded() { const p = this.project; return p ? Math.max(0, p.stone - this.inv.stone) : 0; }
   get boatProgress() { return this.boatSite ? Math.min(1, this.boatWork / BOAT_TICKS) : 0; }
+  get planeProgress() { return this.planeSite ? Math.min(1, this.planeWork / PLANE_TICKS) : 0; }
   get carProgress() { return this.carSite ? Math.min(1, this.carWork / CAR_TICKS) : 0; }
   get staple() { return this.origin === 2 ? 'sunberry' : 'food'; }      // everyday food where you grew up
   get luxury() { return this.origin === 2 ? 'food' : 'sunberry'; }      // the foreign treat
@@ -1046,7 +1054,7 @@ class Agent {
   step() {
     const w = this.w;
     this.moving = false;
-    if (!this.jailed && !this.atSea) this.isle = w.isleOf(this.pos) || this.isle;
+    if (!this.jailed && !this.atSea && !this.flying) this.isle = w.isleOf(this.pos) || this.isle;
     const night = w.isNight ? 1.6 : 1;
     const hard = this.action === 'GatherWood' || this.action === 'MineStone' || this.action === 'Build' || this.action === 'Attack';
     const life = (this.child ? 0.7 : 1) * (this.pregnant > 0 ? 1.3 : 1);
@@ -1196,7 +1204,7 @@ class Agent {
     const tradeOpts = refreshTrades ? [] : this._tradeOpts.filter(t => t.other.alive && !t.other.atSea && !this.tradeCooldown(t.other));
     const cooled = w.tick - this.lastHostile > 300 && w.tick > this.deterredUntil && this.adult;
     for (const o of ((w.byIsle && w.byIsle[this.isle]) || w.agents)) {
-      if (o === this || !o.alive || o.atSea || o.driving || o.jailed || o.isle !== this.isle) continue;
+      if (o === this || !o.alive || o.atSea || o.driving || o.flying || o.jailed || o.isle !== this.isle) continue;
       const r = this.R(o), d = dist(this.pos, o.pos);
       const hears = (o.inNeed && r > 0.2 && d < S * 3) || (o.wanted && d < S * 4);   // news of a killer travels
       if (!(d < S * 1.5) && !hears) continue;
@@ -1332,6 +1340,19 @@ class Agent {
           this.done();
         }
         break;
+      case 'BuildPlane': {
+        if (!this.planeSite) { this.planeSite = { ...this.goal }; this.planeWork = 0; }
+        if (++this.planeWork >= PLANE_TICKS) {
+          if (this.inv.wood < PLANE_WOOD || this.inv.stone < PLANE_STONE) { w.log(`${this.name} lacks materials to finish the plane.`, 'build'); this.planeWork = PLANE_TICKS - 1; this.done(); break; }
+          this.inv.wood -= PLANE_WOOD; this.inv.stone -= PLANE_STONE;
+          const f = this.facing, gz = Math.max(0, w.H(this.planeSite.x, this.planeSite.y));
+          this.plane = { x: this.planeSite.x, y: this.planeSite.y, alt: gz, h: Math.atan2(f.y, f.x), speed: 0, vy: 0 };
+          this.planeSite = null; this.planeWork = 0;
+          w.log(`${this.name} built a flying machine! People gather round to stare at it.`, 'build');
+          this.done();
+        }
+        break;
+      }
       case 'BuildCar': {
         if (!this.carSite) { this.carSite = { ...this.goal }; this.carWork = 0; }
         if (++this.carWork >= CAR_TICKS) {
@@ -1974,6 +1995,7 @@ class Agent {
     if (a.action === 'Fish') return FISH_PHASE[a.fishPhase] || 'fishing';
     if (a.jailed && a.visitor) return 'exploring the labyrinth';
     if (a.jailed) return a.action === 'Sleep' ? 'asleep in the labyrinth' : 'lost in the labyrinth';
+    if (a.flying) return 'flying a plane';
     if (a.driving) return 'driving a car';
     if (a.controlled && a.action === 'Idle') return a.moving ? 'walking' : 'looking around';
     return ACTION_WORDS[a.action] || a.action.toLowerCase();
@@ -2030,7 +2052,7 @@ class Agent {
   const hashName = s => { let h = 0; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) | 0; return Math.abs(h); };
 
   // ---------------- world objects ----------------
-  let cars;
+  let cars, planes;
   let world, worldGroup, people, rigs, houses, scaffolds, boats, resMeshes, bondLines, trailLine, selRing, fishMesh;
   let selected = null, following = false, paused = false, frameNo = 0;
 
@@ -2412,6 +2434,52 @@ class Agent {
     }
   }
 
+  // ---------------- planes ----------------
+  function makePlane(a) {
+    const g = new THREE.Group(), body = new THREE.Group(); g.add(body);
+    const paint = std(a.color, { roughness: 0.5 }), white = std('#F2F2F2', { roughness: 0.5 }), glass = std('#2B3A4A', { roughness: 0.2 });
+    const add = (geo, mat, x, y, z, parent = body) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; parent.add(m); return m; };
+    const fus = add(new THREE.CylinderGeometry(0.55, 0.38, 4.6, 12), white, 0.1, 1.3, 0); fus.rotation.z = Math.PI / 2;
+    const nose = add(new THREE.ConeGeometry(0.55, 0.8, 12), paint, 2.8, 1.3, 0); nose.rotation.z = -Math.PI / 2;
+    add(new THREE.BoxGeometry(1.5, 0.12, 8.6), paint, 0.5, 2.05, 0);                       // high wing
+    for (const z of [-2.2, 2.2]) { const st = add(new THREE.BoxGeometry(0.08, 0.9, 0.08), white, 0.5, 1.6, z); st.rotation.x = z > 0 ? -0.55 : 0.55; }
+    add(new THREE.BoxGeometry(0.9, 0.08, 2.8), paint, -2.05, 1.45, 0);                    // tail plane
+    add(new THREE.BoxGeometry(0.9, 1.2, 0.08), paint, -2.15, 2.0, 0);                     // fin
+    add(new THREE.BoxGeometry(0.9, 0.5, 1.02), glass, 1.0, 1.72, 0);                      // cockpit window
+    const prop = new THREE.Group(); prop.position.set(3.22, 1.3, 0); body.add(prop);
+    add(new THREE.BoxGeometry(0.06, 2.4, 0.18), MAT.tyre, 0, 0, 0, prop);
+    const wheel = new THREE.CylinderGeometry(0.32, 0.32, 0.22, 12); wheel.rotateX(Math.PI / 2);
+    for (const z of [-0.85, 0.85]) { add(wheel, MAT.tyre, 1.1, 0.32, z); add(new THREE.BoxGeometry(0.08, 0.7, 0.08), white, 1.1, 0.7, z * 0.8); }
+    add(new THREE.CylinderGeometry(0.16, 0.16, 0.12, 10).rotateX(Math.PI / 2), MAT.tyre, -2.3, 0.2, 0);
+    g.scale.setScalar(SIZE);
+    worldGroup.add(g);
+    const el = document.createElement('div'); el.className = 'site';
+    const lbl = new THREE.CSS2DObject(el); lbl.position.set(0, 3.2, 0); g.add(lbl);
+    return { g, body, prop, el, lbl, txt: '' };
+  }
+  function syncPlanes(dt) {
+    for (const a of world.agents) {
+      let c = planes.get(a.id);
+      const building = !a.plane && a.planeSite && a.alive;
+      if (!a.plane && !building) { if (c) { worldGroup.remove(c.g); c.el.remove(); planes.delete(a.id); } continue; }
+      if (!c) { c = makePlane(a); planes.set(a.id, c); }
+      if (a.plane) {
+        const k = a.plane, f = { x: Math.cos(k.h), y: Math.sin(k.h) };
+        c.g.position.set(k.x, k.alt, k.y);
+        c.g.rotation.set(k.roll || 0, Math.atan2(-f.y, f.x), k.vpitch || 0, 'YXZ');
+        c.body.scale.set(1, 1, 1); c.lbl.visible = false;
+        c.prop.rotation.x += (a.flying ? 8 + k.speed * 0.6 : 0) * dt;
+      } else {
+        const s = a.planeSite, p = a.planeProgress;
+        c.g.position.set(s.x, Math.max(0, s.z), s.y);
+        c.body.scale.set(1, Math.max(0.08, p), 1);
+        const txt = `${a.name}’s plane ${Math.round(p * 100)}%`;
+        if (txt !== c.txt) { c.txt = txt; c.el.textContent = txt; }
+        c.lbl.visible = view.names && p > 0;
+      }
+    }
+  }
+
   // ---------------- little people ----------------
   function makeRig(a) {
     const shirt = std(a.color), pants = std(darker(a.color, 0.55));
@@ -2501,7 +2569,7 @@ class Agent {
       return p;
     }
     const ph = t * 0.25 + a.name.length * 1.7;
-    if (a.driving) {   // sitting, hands on the wheel
+    if (a.driving || a.flying) {   // sitting, hands on the wheel or the stick
       p.legL = p.legR = 1.5; p.kneeL = p.kneeR = 1.5; p.lean = -0.1;
       p.armL = p.armR = 1.05; p.elbowL = p.elbowR = 0.5; p.raiseL = p.raiseR = 0.15;
       return p;
@@ -2562,7 +2630,10 @@ class Agent {
     const home = a.jailed ? mazePeople : people;
     if (r.root.parent !== home) home.add(r.root);
     const dp = drawPos(a);
-    if (a.jailed) {
+    if (a.flying && a.plane) {
+      const k = a.plane, f = { x: Math.cos(k.h), y: Math.sin(k.h) };
+      r.root.position.set(k.x + f.x * 0.75 * SIZE, k.alt + 0.72 * SIZE, k.y + f.y * 0.75 * SIZE);
+    } else if (a.jailed) {
       const mp = a.mazePos, pp = a.prevM;
       const q = renderAlpha < 1 && pp && !a.controlled && Math.abs(mp.x - pp.x) + Math.abs(mp.y - pp.y) < 6
         ? { x: pp.x + (mp.x - pp.x) * renderAlpha, y: pp.y + (mp.y - pp.y) * renderAlpha } : mp;
@@ -2593,7 +2664,7 @@ class Agent {
       r.el.classList.toggle('need', a.alive && (a.inNeed || a.wanted));
       r.el.classList.toggle('dead', !a.alive);
     }
-    r.root.visible = !(play.on && a === play.a) || a.driving;   // you see yourself in the chase view
+    r.root.visible = !(play.on && a === play.a) || a.driving || a.flying;   // you see yourself in the chase view
     r.label.visible = (view.names || a === selected) && (a.alive || a === selected);
     if (play.on) r.label.visible = a !== play.a && a.alive && camera.position.distanceTo(r.root.position) < 45;
     if (r.label.visible && frameNo % 15 === 0) {
@@ -2799,6 +2870,7 @@ class Agent {
     if (hatchLabel) { hatchLabel.element.remove(); hatchLabel = null; }
     if (boats) for (const b of boats.values()) b.el.remove();
     if (cars) for (const c of cars.values()) c.el.remove();
+    if (planes) for (const c of planes.values()) c.el.remove();
     scene.remove(worldGroup);
     worldGroup.traverse(o => { if (o.isInstancedMesh) o.dispose?.(); });
   }
@@ -2810,7 +2882,7 @@ class Agent {
     world = new World({ ...cfg });
     worldGroup = new THREE.Group(); scene.add(worldGroup);
     people = new THREE.Group(); worldGroup.add(people);
-    rigs = new Map(); houses = new Map(); scaffolds = new Map(); boats = new Map(); cars = new Map();
+    rigs = new Map(); houses = new Map(); scaffolds = new Map(); boats = new Map(); cars = new Map(); planes = new Map();
     selected = null; following = false; resetPeople(); renderCard(); renderPeople(); renderLog(true);
     buildTerrain(); buildResources(); buildLines(); buildMazeScene(); buildHatch(); viewMaze = false;
     const R = world.R;
@@ -2838,6 +2910,7 @@ class Agent {
     if (frameNo % 3 === 0) syncHouses();
     syncBoats(t);
     syncCars(t, lastDt / 1000);
+    syncPlanes(lastDt / 1000);
     updateFish(t);
     if (frameNo % 60 === 0) {      // people who died long ago are forgotten by the simulation
       const ids = new Set(world.agents.map(a => a.id));
@@ -2846,6 +2919,7 @@ class Agent {
       for (const [id, sc] of scaffolds) if (!ids.has(id)) { worldGroup.remove(sc.lines); worldGroup.remove(sc.lbl); sc.el.remove(); scaffolds.delete(id); }
       for (const [id, b] of boats) if (!ids.has(id)) { worldGroup.remove(b.g); b.el.remove(); boats.delete(id); }
       for (const [id, c] of cars) if (!ids.has(id)) { worldGroup.remove(c.g); c.el.remove(); cars.delete(id); }
+      for (const [id, c] of planes) if (!ids.has(id)) { worldGroup.remove(c.g); c.el.remove(); planes.delete(id); }
       if (selected && !ids.has(selected.id)) select(null);
     }
     if (frameNo % 20 === 0) updateResources();
@@ -3206,6 +3280,7 @@ class Agent {
     const a = play.a;
     play.wasJailed = false;
     if (a && a.driving) { a.driving = false; if (a.car) a.car.speed = 0; }
+    if (a && a.flying) landNow(a);
     if (a) a.controlled = false;
     play.on = false; play.a = null;
     document.body.classList.remove('playing');
@@ -3239,7 +3314,7 @@ class Agent {
   window.addEventListener('mouseup', () => { play.dragging = false; });
   window.addEventListener('mousemove', e => {
     if (!play.on || play.dead) return;
-    if ((play.locked || play.dragging) && play.a && play.a.driving) { play.camYaw = clamp((play.camYaw || 0) - e.movementX * 0.003, -2.5, 2.5); return; }
+    if ((play.locked || play.dragging) && play.a && (play.a.driving || play.a.flying)) { play.camYaw = clamp((play.camYaw || 0) - e.movementX * 0.003, -2.5, 2.5); return; }
     if (play.locked || play.dragging) {
       play.yaw -= e.movementX * 0.0024;
       play.pitch = clamp(play.pitch - e.movementY * 0.0024, -1.3, 1.2);
@@ -3364,6 +3439,12 @@ class Agent {
         : days < 0.3 ? 'Find the way out. Look for the beam of light above the walls.' : `The glow of the way out is ${dir}`;
       return L;
     }
+    if (a.flying) {       // flying
+      const k = a.plane, ground = Math.max(0, world.H(k.x, k.y)), up = k.air ? k.alt - ground : 0;
+      add('P', 'Climb out of the plane', () => leavePlane(), !k.air && Math.abs(k.speed) < 2, k.air ? 'land first' : 'come to a stop first (S)');
+      play.feel = `${Math.round(k.speed * 1.44)} km/h, ${Math.round(up * 0.4)} m up` + (k.speed < 16 && up > 1 ? '. Too slow, you’re sinking!' : '');
+      return L;
+    }
     if (a.driving) {      // driving
       const k = a.car, sp = Math.abs(k.speed);
       add('U', 'Get out of the car', () => leaveCar(), sp < 3, 'slow down first (S or Space)');
@@ -3452,6 +3533,19 @@ class Agent {
           a.command('BuildBoat', { goal: { ...a.pos } });
         }, a.inv.wood >= 8, needText(8, 0));
     }
+    // plane
+    if (a.adult) {
+      if (a.plane && !a.plane.air && Math.hypot(a.plane.x - a.pos.x, a.plane.y - a.pos.y) < 7)
+        add('P', 'Climb into your plane', () => enterPlane());
+      else if (!a.plane && a.planeSite && dist2(a.planeSite, a.pos) < 7)
+        add('P', `Keep building your plane (${Math.round(a.planeProgress * 100)}%)`, () => a.command('BuildPlane', { goal: a.planeSite }), a.inv.wood >= 25 && a.inv.stone >= 12, needText(25, 12));
+      else if (!a.plane) {
+        const flat = world.H(a.pos.x, a.pos.y) > 0.8 && Math.abs(world.H(a.pos.x + 3, a.pos.y) - world.H(a.pos.x - 3, a.pos.y)) + Math.abs(world.H(a.pos.x, a.pos.y + 3) - world.H(a.pos.x, a.pos.y - 3)) < 3;
+        add('P', a.planeSite ? 'Build your plane here instead' : 'Build a small plane here (25 wood, 12 stone)', () => {
+          a.planeSite = null; a.planeWork = 0; a.command('BuildPlane', { goal: { ...a.pos } });
+        }, flat && a.inv.wood >= 25 && a.inv.stone >= 12, !flat ? 'the ground here is too steep or wet' : needText(25, 12));
+      }
+    }
     // car
     if (a.adult) {
       if (a.car && Math.hypot(a.car.x - a.pos.x, a.car.y - a.pos.y) < 6) add('U', 'Get into your car', () => enterCar());
@@ -3480,6 +3574,32 @@ class Agent {
     const a = play.a, ang = Math.atan2(p.y - a.pos.y, p.x - a.pos.x), f = fwd(), my = Math.atan2(f.y, f.x);
     let d = ang - my; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
     return Math.abs(d) < 0.4 ? 'straight ahead' : Math.abs(d) > 2.6 ? 'behind you' : d > 0 ? 'to your right' : 'to your left';
+  }
+
+  // ---------- planes: in, out, flying ----------
+  function enterPlane() {
+    const a = play.a, k = a.plane;
+    a.done(); a.flying = true; k.speed = 0; k.vy = 0;
+    a.pos = { x: k.x, y: k.y, z: world.H(k.x, k.y) };
+    play.camYaw = 0;
+    toast('W for more throttle, S for less, A and D to turn. Speed up, then hold Space to take off. Shift to descend. To land, slow down and come down over land.', 'build');
+  }
+  function landNow(a) {           // leaving play mid-flight: the plane glides safely down
+    const k = a.plane; a.flying = false; k.speed = 0; k.vy = 0; k.vpitch = 0; k.roll = 0; k.air = false;
+    let x = k.x, y = k.y;
+    if (world.H(x, y) < 0.4) { const land = a.landNear({ x, y }, 60) || a.pos; x = land.x; y = land.y; }
+    k.x = x; k.y = y; k.alt = Math.max(0, world.H(x, y));
+    a.pos = { x, y, z: world.H(x, y) };
+  }
+  function leavePlane() {
+    const a = play.a, k = a.plane;
+    a.flying = false; k.speed = 0; k.vy = 0; k.vpitch = 0; k.roll = 0;
+    const f = { x: Math.cos(k.h), y: Math.sin(k.h) };
+    for (const side of [1, -1, 2, -2]) {
+      const x = k.x - f.y * 3.2 * side, y = k.y + f.x * 3.2 * side;
+      if (world.H(x, y) >= 0.4) { a.pos = { x, y, z: world.H(x, y) }; break; }
+    }
+    play.yaw = Math.atan2(-f.x, -f.y);
   }
 
   // ---------- getting in and out of the car ----------
@@ -3581,6 +3701,7 @@ class Agent {
     if (!a.alive && !play.dead) {
       play.dead = true; play.keys.clear();
       if (a.driving) { a.driving = false; if (a.car) a.car.speed = 0; }
+      if (a.flying) landNow(a);
       $('hud-actions').innerHTML = ''; $('hud-doing').hidden = true; $('hud-feel').textContent = '';
       if (document.pointerLockElement) document.exitPointerLock();
       showMenu('dead');
@@ -3594,6 +3715,48 @@ class Agent {
     mx = f.x * fw + right.x * st; my = f.y * fw + right.y * st;
     const len = Math.hypot(mx, my);
     let moved = false;
+    if (a.alive && a.flying && a.plane) {
+      const k = a.plane, active = pmenu.hidden && !trade;
+      const ground = Math.max(0, world.H(k.x, k.y)), onGround = !k.air;
+      let throttle = active ? fw : 0, turn = active ? st : 0;
+      let climb = active ? (K.has('Space') ? 1 : 0) - (K.has('Shift') ? 1 : 0) : 0;
+      if (play.joy && Math.hypot(play.joy.x, play.joy.y) > 0.15) {        // phone: joystick steers and climbs, engine cruises
+        climb = -play.joy.y; turn = play.joy.x; throttle = 0;
+        k.speed += ((play.run ? 46 : 32) - k.speed) * Math.min(1, dt * 0.8);
+      }
+      if (throttle > 0.1) k.speed += throttle * 14 * dt;
+      else if (throttle < -0.1) k.speed -= -throttle * (onGround ? 22 : 12) * dt;
+      k.speed = clamp(k.speed * (1 - (onGround && throttle <= 0 ? 0.9 : 0.05) * dt), 0, 48);
+      if (k.speed > 3) k.h += turn * dt * (onGround ? 1.4 : 1.0);           // D turns right
+      k.roll = (k.roll || 0) + ((onGround ? 0 : -turn * 0.5) - (k.roll || 0)) * Math.min(1, dt * 3);
+      if (onGround) {
+        k.vy = 0; k.alt = ground;
+        if (k.speed > 16 && climb > 0) { k.air = true; k.vy = 6; k.alt = ground + 0.6; toast('Lift-off!', 'build'); }
+      } else {
+        const target = k.speed < 16 ? -9 : climb * (7 + k.speed * 0.12);   // too slow and you sink
+        k.vy += (target - k.vy) * Math.min(1, dt * 2.5);
+        k.alt = Math.min(150, k.alt + k.vy * dt);
+        if (k.alt <= ground + 0.1) {
+          if (world.H(k.x, k.y) < 0.4) { k.alt = ground + 1.5; k.vy = 3; if (!play.waterWarned) { toast('You can’t land on water. Fly over land to come down.', 'warn'); play.waterWarned = true; } }
+          else if (k.speed > 26) { k.alt = ground + 0.6; k.vy = 4; toast('Too fast to land! Slow down with S first.', 'warn'); }
+          else { k.alt = ground; k.vy = 0; k.air = false; play.waterWarned = false; toast('Touchdown. Nice landing!', 'help'); }
+        }
+      }
+      k.vpitch = Math.atan2(k.vy, Math.max(8, k.speed)) * 0.9;
+      const f = { x: Math.cos(k.h), y: Math.sin(k.h) };
+      k.x += f.x * k.speed * dt; k.y += f.y * k.speed * dt;
+      const lim = world.R * 3.2;                                            // don't fly off the edge of the world
+      if (Math.hypot(k.x, k.y) > lim) { k.x *= lim / Math.hypot(k.x, k.y); k.y *= lim / Math.hypot(k.x, k.y); k.h += Math.PI * dt; }
+      if (!k.air) k.alt = Math.max(0, world.H(k.x, k.y));          // rolling along the ground
+      a.pos = { x: k.x, y: k.y, z: world.H(k.x, k.y) };
+      a.facing = f; a.moving = false;
+      if (!play.locked && !play.dragging && !play.joy) play.camYaw *= 1 - Math.min(1, 2 * dt);
+      const yaw = k.h + (play.camYaw || 0), back = { x: Math.cos(yaw), y: Math.sin(yaw) };
+      const cx = k.x - back.x * 20, cy = k.y - back.y * 20;
+      camera.position.set(cx, Math.max(Math.max(0, world.H(cx, cy)) + 4, k.alt + 8), cy);
+      camera.lookAt(k.x + back.x * 10, k.alt + 1, k.y + back.y * 10);
+      return;
+    }
     if (a.alive && a.jailed) {
       const m = world.maze, B = m.B, rad = 0.9;
       const free = (x, y) => [[rad, rad], [rad, -rad], [-rad, rad], [-rad, -rad]].every(([ox, oy]) => world.mazeOpen(Math.floor((x + ox) / B), Math.floor((y + oy) / B)));
@@ -3730,7 +3893,7 @@ class Agent {
     }
     if (a.wanted && !play.wantedWarned) { play.wantedWarned = true; toast('You are wanted for murder. The islanders will try to lock you in the labyrinth.', 'fight'); }
     if (!a.wanted) play.wantedWarned = false;
-    if (world.onIsle2(a.pos) && !a.atSea && !a.jailed) {
+    if (world.onIsle2(a.pos) && !a.atSea && !a.jailed && !a.flying) {
       if (!world.isle2Found && a.origin !== 2) { world.isle2Found = true; world.log(`${a.name} reached the far island and met its people!`, 'build'); }
       if (!play.isleHint && a.origin !== 2) { play.isleHint = true; toast('The people here live on sunberries and treat ordinary berries as a rare treat. Back home it’s the other way round, so trade both ways!', 'trade'); }
     }
@@ -3749,7 +3912,7 @@ class Agent {
     $('hud-needs').innerHTML = bar('Health', a.health, 'good') + bar('Hunger', a.hunger, a.hunger > 0.75 ? 'warn' : '') +
       bar('Thirst', a.thirst, a.thirst > 0.75 ? 'warn' : '') + bar('Tiredness', a.fatigue, a.fatigue > 0.8 ? 'warn' : '');
     const home = a.house ? HOUSE[a.house] : 'no home';
-    $('hud-inv').textContent = `${a.inv.sunberry ? a.inv.sunberry + ' sunberries, ' : ''}${a.inv.food} berries, ${a.inv.fish} fish, ${a.inv.water} water, ${a.inv.wood} wood, ${a.inv.stone} stone. Home: ${home}.${a.boat ? ' You own a boat.' : ''}${a.car ? ' You own a car.' : ''}`
+    $('hud-inv').textContent = `${a.inv.sunberry ? a.inv.sunberry + ' sunberries, ' : ''}${a.inv.food} berries, ${a.inv.fish} fish, ${a.inv.water} water, ${a.inv.wood} wood, ${a.inv.stone} stone. Home: ${home}.${a.boat ? ' You own a boat.' : ''}${a.car ? ' You own a car.' : ''}${a.plane ? ' You own a plane.' : ''}`
       + (a.hasPartner ? ` Partner: ${a.partner.name}.` : '');
     const doing = a.action === 'Idle' ? '' : actionText(a);
     const prog = a.action === 'Build' ? a.buildProgress : null;
@@ -3759,7 +3922,7 @@ class Agent {
     $('hud-actions').innerHTML = play.actions.map(x =>
       `<li class="${x.ok ? '' : 'off'}"><kbd>${x.key}</kbd>${esc(x.label)}${x.ok ? '' : `<small>${esc(x.why)}</small>`}</li>`).join('');
     $('crosshair').classList.toggle('on', !!play.target);
-    $('crosshair').hidden = !!a.driving;
+    $('crosshair').hidden = !!(a.driving || a.flying);
   }
   $('hud-actions').addEventListener('click', e => {
     const li = e.target.closest('li'); if (!li) return;
@@ -3795,7 +3958,7 @@ class Agent {
   let vmColor = '';
   function updateViewmodel(dt) {
     const a = play.a;
-    vm.visible = !!a && a.alive && a.action !== 'Sleep' && !play.dead && !a.driving;
+    vm.visible = !!a && a.alive && a.action !== 'Sleep' && !play.dead && !a.driving && !a.flying;
     if (!vm.visible) return;
     if (vmColor !== a.color) { vmColor = a.color; VM.sleeve.color.set(a.color); }
     const t = performance.now() / 1000, act = a.action;
@@ -3829,7 +3992,7 @@ class Agent {
     if (trade && frameNo % 30 === 0) renderTrade();   // their needs change while you haggle
     if (hudTimer > 120 && play.a && play.a.alive) {
       hudTimer = 0;
-      play.target = play.a.atSea || play.a.driving || play.a.jailed ? null : findTarget();
+      play.target = play.a.atSea || play.a.driving || play.a.flying || play.a.jailed ? null : findTarget();
       play.actions = buildActions();
       renderHud();
     }
