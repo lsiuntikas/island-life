@@ -582,19 +582,23 @@ class World {
     this.res = []; this.agents = []; this.events = []; this.newborns = [];
     this.births = 0; this.deaths = 0; this.tradeCount = 0;
 
-    this.G = Math.round(24 * this.scale);
-    this.cell = 2.5 * this.R / this.G;
-    this.origin = -1.25 * this.R;
-    this.land = new Uint8Array(this.G * this.G);
+    const i2g = this.isle2;
+    const lo = Math.min(-1.25 * this.R, i2g.x - i2g.r * 1.3, i2g.y - i2g.r * 1.3);
+    const hi = Math.max(1.25 * this.R, i2g.x + i2g.r * 1.3, i2g.y + i2g.r * 1.3);
+    this.cell = 2.5 * 100 / 24;                       // about 10 steps per square
+    this.origin = lo;
+    this.G = Math.ceil((hi - lo) / this.cell);
+    this.land = new Uint8Array(this.G * this.G);      // 0 sea, 1 main island, 2 far island
     this.cellNoise = new Float32Array(this.G * this.G);
     this.cellPts = [];
-    this.landCount = 0;
+    this.landCount = { 1: 0, 2: 0 };
+    this.landCells = { 1: [], 2: [] };
     for (let j = 0; j < this.G; j++)
       for (let i = 0; i < this.G; i++) {
         const k = j * this.G + i, c = this.cellCenter(i, j);
         this.cellPts[k] = c;
-        this.land[k] = this.isLand(c.x, c.y) ? 1 : 0;
-        this.landCount += this.land[k];
+        this.land[k] = this.isleOf(c);
+        if (this.land[k]) { this.landCount[this.land[k]]++; this.landCells[this.land[k]].push(k); }
         this.cellNoise[k] = 0.7 + 0.6 * this.rnd();
       }
 
@@ -607,7 +611,8 @@ class World {
     const i2 = this.isle2, area2 = (this.R * 0.45 / 100) ** 2;
     this.scatterAt('palm', Math.round(45 * area2 + 8), i2, 0.6, 9, 5, 0.002);
     this.scatterAt('sunbush', Math.round(22 * area2 + 5), i2, 1.0, 8, 4, 0.003);
-    this.scatterAt('spring', 1, i2, 2, 10, 1, 0);
+    this.scatterAt('spring', 2, i2, 2, 10, 1, 0);
+    this.scatterAt('rock', 6, i2, 3, 12, 6, 0.0005);
     // schools of fish offshore
     this.fishCaught = 0;
     const grounds = Math.max(4, Math.round(5 * this.scale));
@@ -619,7 +624,10 @@ class World {
       this.res.push({ kind: 'fish', pos: { x, y, z: 0 }, amount: 20, max: 20, regen: 0.012, id: this.res.length });
       g++;
     }
+    for (const r of this.res) r.isle = this.isleOf(r.pos);
+    this.resByIsle = { 1: this.res.filter(r => r.isle === 1), 2: this.res.filter(r => r.isle === 2) };
     this.spawn(cfg.agents);
+    this.spawnNatives(Math.max(5, Math.round(cfg.agents * 0.4)));
     this.maze = buildMaze(11, this.rnd);
     this.hatch = this.findHatchSpot();
     this.jailings = 0; this.escapes = 0;
@@ -635,6 +643,7 @@ class World {
     if (Math.abs(dx) < i.r * 1.3 && Math.abs(dy) < i.r * 1.3) return Math.max(this.H1(x, y), this.H2(dx, dy));
     return this.H1(x, y);
   }
+  isleOf(p) { return !this.isLand(p.x, p.y) ? 0 : this.onIsle2(p) ? 2 : 1; }
   onIsle2(p) { const i = this.isle2; return Math.hypot(p.x - i.x, p.y - i.y) < i.r * 1.25; }
   H2(dx, dy) {    // low, rounded tropical island
     const r = Math.hypot(dx, dy) / this.isle2.r;
@@ -690,6 +699,44 @@ class World {
       placed++;
     }
   }
+
+  // the far island's own people
+  spawnNatives(count) {
+    const SYL = ['ka', 'lei', 'ho', 'nui', 'ma', 'lo', 'ta', 'wai', 'ri', 'ko', 'pa', 'na', 'mo', 'ke', 'hi', 'la'];
+    const name = () => {
+      for (let t = 0; t < 60; t++) {
+        let n = SYL[Math.floor(this.rnd() * SYL.length)] + SYL[Math.floor(this.rnd() * SYL.length)];
+        n = n[0].toUpperCase() + n.slice(1);
+        if (!this.agents.some(a => a.name === n)) return n;
+      }
+      return 'Kai' + this.agents.length;
+    };
+    const i2 = this.isle2;
+    for (let i = 0; i < count; i++) {
+      let p = null;
+      for (let t = 0; t < 2000 && !p; t++) {
+        const a = this.rnd() * Math.PI * 2, r = i2.r * Math.sqrt(this.rnd()) * 0.8, x = i2.x + Math.cos(a) * r, y = i2.y + Math.sin(a) * r, h = this.H(x, y);
+        if (h > 0.8 && h < 6) p = { x, y, z: h };
+      }
+      if (!p) break;
+      const kind = this.rnd(), aggr = clamp((1 - kind) * 0.7 + (this.rnd() - 0.5) * 0.4, 0.05, 0.9);
+      const a = new Agent(this, name(), hsv((0.08 + i * 0.13) % 1, 0.62, 0.82), kind, aggr, p);
+      a.origin = 2; a.ambition = 0.2 + 0.7 * this.rnd();
+      a.sex = i % 2 === 0 ? 'F' : 'M';
+      a.age = 5 + 5 * this.rnd();
+      a.lifespan = this.cfg.minLife + (this.cfg.maxLife - this.cfg.minLife) * this.rnd();
+      const springs = this.res.filter(r => r.kind === 'spring' && r.isle === 2).sort((u, v) => dist(u.pos, p) - dist(v.pos, p));
+      if (springs.length) a.learn(springs[0]);
+      this.agents.push(a);
+    }
+  }
+  islePop(origin) {
+    let n = 0;
+    for (const a of this.agents) if (a.alive && a.origin === origin) n += 1 + (a.pregnant > 0 ? 1 : 0);
+    for (const a of this.newborns) if (a.origin === origin) n++;
+    return n;
+  }
+  isleCap(origin) { return origin === 2 ? Math.max(8, Math.round(this.cfg.maxPop * 0.4)) : this.cfg.maxPop; }
 
   spawn(count) {
     const presets = [['#4169E1', 0.9, 0.1], ['#FF8C00', 0.5, 0.4], ['#DC143C', 0.15, 0.9], ['#BA55D3', 0.7, 0.3], ['#008080', 0.3, 0.7]];
@@ -756,7 +803,11 @@ class World {
       if (!viaLadder) this.log(`${a.name} found the way through the labyrinth and climbed out by the hatch.`, 'build');
       return;
     }
-    a.pos = this.randomLand(0.6, 2.5);
+    if (a.origin === 2) {
+      const c = this.isle2; let p = null;
+      for (let t = 0; t < 2000 && !p; t++) { const x = c.x + (this.rnd() - 0.5) * c.r * 1.6, y = c.y + (this.rnd() - 0.5) * c.r * 1.6, h = this.H(x, y); if (h > 0.6 && h < 3 && this.onIsle2({ x, y })) p = { x, y, z: h }; }
+      a.pos = p || this.randomLand(0.6, 2.5);
+    } else a.pos = this.randomLand(0.6, 2.5);
     a.escapes = (a.escapes || 0) + 1; this.escapes++;
     const days = Math.max(1, Math.round((this.tick - a.jailTick) / DAY));
     this.log(`${a.name} found the way out of the labyrinth after ${days} ${days === 1 ? 'day' : 'days'} and is back on the island.`, 'fight');
@@ -765,7 +816,13 @@ class World {
   nearestGround(p) {
     let best = null, bd = Infinity;
     if (!this.grounds) this.grounds = this.res.filter(r => r.kind === 'fish');
-    for (const r of this.grounds) if (r.amount >= 1) { const d = dist2(r.pos, p); if (d < bd) { bd = d; best = r; } }
+    for (const r of this.grounds) if (r.amount >= 1) {
+      const d = dist2(r.pos, p);
+      if (d >= bd) continue;
+      let clear = true;                       // the straight course must stay on water
+      for (let k = 1; k < 12 && clear; k++) { const t = k / 12; if (this.H(p.x + (r.pos.x - p.x) * t, p.y + (r.pos.y - p.y) * t) > 0.2) clear = false; }
+      if (clear) { bd = d; best = r; }
+    }
     return best;
   }
 
@@ -789,6 +846,9 @@ class World {
     this.claims = new Map();
     for (const a of this.agents)
       if (a.alive && a.target && (a.action === 'Eat' || a.action === 'Forage')) this.claims.set(a.target, (this.claims.get(a.target) || 0) + 1);
+    // who is on which island right now: people only meet people on the same island
+    this.byIsle = { 0: [], 1: [], 2: [] };
+    for (const a of this.agents) if (a.alive && !a.jailed) this.byIsle[a.atSea ? 0 : a.isle].push(a);
     for (const a of this.agents) if (a.alive) a.step();
     for (const a of this.agents)
       if (!a.alive && !a.deathLogged) {
@@ -839,6 +899,7 @@ class World {
     const kid = new Agent(this, this.newName(), blendHex(mom.color, dad.color, this.rnd),
       c01((mom.kindness + dad.kindness) / 2 + noise()), c01((mom.aggression + dad.aggression) / 2 + noise()), { ...mom.pos });
     kid.ambition = c01((mom.ambition + dad.ambition) / 2 + noise());
+    kid.origin = mom.origin;
     kid.sex = this.rnd() < 0.5 ? 'M' : 'F';
     kid.age = 0;
     kid.lifespan = this.cfg.minLife + (this.cfg.maxLife - this.cfg.minLife) * this.rnd();
@@ -875,6 +936,7 @@ class Agent {
     this.friendTicks = new Map(); this.lastTrade = new Map(); this.blocked = new Map();
     this.trail = [];
     this.controlled = false;     // true when the player is this person
+    this.origin = 1; this.isle = w.isleOf(pos) || 1;   // born on island 1 or 2; island they're on now
     this.wanted = false; this.jailed = false; this.mazePos = null; this.crimes = 0;
     this.car = null; this.carSite = null; this.carWork = 0; this.driving = false;   // car: { x, y, z, h, speed }
   }
@@ -909,7 +971,9 @@ class Agent {
   get stoneNeeded() { const p = this.project; return p ? Math.max(0, p.stone - this.inv.stone) : 0; }
   get boatProgress() { return this.boatSite ? Math.min(1, this.boatWork / BOAT_TICKS) : 0; }
   get carProgress() { return this.carSite ? Math.min(1, this.carWork / CAR_TICKS) : 0; }
-  get meals() { return this.inv.food + this.inv.fish; }
+  get staple() { return this.origin === 2 ? 'sunberry' : 'food'; }      // everyday food where you grew up
+  get luxury() { return this.origin === 2 ? 'food' : 'sunberry'; }      // the foreign treat
+  get meals() { return this.inv[this.staple] + this.inv.fish; }
   get drive() { return this.house === 0 ? 1 : 0.25 + 0.6 * this.ambition; }
 
   learn(r) { if (!this.known.has(r)) { this.known.add(r); this.knownBy[r.kind].push(r); } }
@@ -954,20 +1018,20 @@ class Agent {
       && this.need < 0.6 && p.need < 0.6 && this.health > 0.6 && p.health > 0.6
       && mom.pregnant === 0 && this.w.tick - mom.lastBirth > 2 * DAY
       && mom.age < mom.lifespan - 8 && mom.children.length < 4
-      && this.w.population < this.w.cfg.maxPop;
+      && this.w.islePop(mom.origin) < this.w.isleCap(mom.origin);
   }
 
   updateBonds() {
     const w = this.w;
     if ((w.tick + this.id) % 5 !== 0) return;         // friendships change slowly; check every 5 ticks
-    for (const o of w.agents) {
+    for (const o of ((w.byIsle && w.byIsle[this.isle]) || w.agents)) {
       if (o === this || !o.alive) continue;
       const close = this.R(o) > 0.4 && o.R(this) > 0.4;
       const t = this.friendTicks.get(o) || 0;
       this.friendTicks.set(o, close ? t + 5 : Math.max(0, t - 10));
     }
     if (this.sex !== 'F' || this.hasPartner || !this.adult) return;
-    for (const o of w.agents) {
+    for (const o of ((w.byIsle && w.byIsle[this.isle]) || w.agents)) {
       if (!o.alive || o.sex !== 'M' || !o.adult || o.hasPartner || this.isKin(o)) continue;
       if ((this.friendTicks.get(o) || 0) > w.cfg.bondDays * DAY) {
         this.partner = o; o.partner = this;
@@ -982,6 +1046,7 @@ class Agent {
   step() {
     const w = this.w;
     this.moving = false;
+    if (!this.jailed && !this.atSea) this.isle = w.isleOf(this.pos) || this.isle;
     const night = w.isNight ? 1.6 : 1;
     const hard = this.action === 'GatherWood' || this.action === 'MineStone' || this.action === 'Build' || this.action === 'Attack';
     const life = (this.child ? 0.7 : 1) * (this.pregnant > 0 ? 1.3 : 1);
@@ -1028,7 +1093,7 @@ class Agent {
   perceive() {
     const w = this.w, S = w.cfg.sight;
     if ((w.tick + this.id) % 6 !== 0) return;          // look around every 6 ticks
-    for (const r of w.res) {
+    for (const r of ((w.resByIsle && w.resByIsle[this.isle]) || w.res)) {
       if (this.known.has(r) || dist(r.pos, this.pos) > S) continue;
       this.learn(r);
       if (r.kind === 'spring' && this.adult) w.log(`${this.name} discovered a spring.`, 'info');
@@ -1053,15 +1118,17 @@ class Agent {
     const opt = (name, score, res) => out.push({ name, score, res, goal: res.pos });
     const soc = (name, score, other) => out.push({ name, score, other, goal: other.pos });
     const df = p => 1 / (1 + dist(this.pos, p) / (60 * w.scale));
-    const spring = this.nearest('spring'), bush = this.nearest('bush'), tree = this.nearest('tree');
+    const here2 = this.isle === 2;
+    const spring = this.nearest('spring'), bush = this.nearest(here2 ? 'sunbush' : 'bush'), tree = this.nearest(here2 ? 'palm' : 'tree');
 
     if (spring) opt('Drink', urg(this.thirst) * lerp(df(spring.pos), 1, this.thirst), spring);
     if (this.inv.water > 0) out.push({ name: 'Sip', score: urg(this.thirst) * 1.05, goal: this.pos });
     if (this.meals > 0) out.push({ name: 'Snack', score: urg(this.hunger) * 1.05, goal: this.pos });
     if (bush) {
       opt('Eat', urg(this.hunger) * lerp(df(bush.pos), 1, this.hunger), bush);
-      if (this.inv.food < MAX_FOOD)
-        opt('Forage', (0.1 + 0.25 * this.kindness) * (1 - this.inv.food / MAX_FOOD) * (1 - this.hunger) * df(bush.pos), bush);
+      const carried = here2 ? this.inv.sunberry : this.inv.food;
+      if (carried < MAX_FOOD)
+        opt('Forage', (0.1 + 0.25 * this.kindness) * (1 - carried / MAX_FOOD) * (1 - this.hunger) * df(bush.pos), bush);
     }
     const bed = this.sleepSpot();
     const critical = Math.max(0, Math.max(this.hunger, this.thirst) - 0.7) * 3;
@@ -1101,7 +1168,8 @@ class Agent {
     }
 
     // fishing trips (daylight only)
-    if (this.boat && this.adult && this.inv.fish < MAX_FISH && w.dayFrac < 0.55 && w.nearestGround(this.boat.moor)) {
+    if (this.boat && (!this._gnd || w.tick - this._gndT > 90 || this._gnd.amount < 1)) { this._gnd = w.nearestGround(this.boat.moor); this._gndT = w.tick; }
+    if (this.boat && this.adult && this.inv.fish < MAX_FISH && w.dayFrac < 0.55 && this._gnd) {
       const want = 0.15 + 0.55 * this.hunger * (this.meals < 1 ? 1 : 0.4);
       out.push({
         name: 'Fish', score: want * (1 - this.inv.fish / MAX_FISH) * (1 - this.fatigue) * (1 - this.thirst * 0.6)
@@ -1127,8 +1195,8 @@ class Agent {
     const refreshTrades = (w.tick + this.id) % 10 === 0 || !this._tradeOpts;
     const tradeOpts = refreshTrades ? [] : this._tradeOpts.filter(t => t.other.alive && !t.other.atSea && !this.tradeCooldown(t.other));
     const cooled = w.tick - this.lastHostile > 300 && w.tick > this.deterredUntil && this.adult;
-    for (const o of w.agents) {
-      if (o === this || !o.alive || o.atSea || o.driving || o.jailed) continue;
+    for (const o of ((w.byIsle && w.byIsle[this.isle]) || w.agents)) {
+      if (o === this || !o.alive || o.atSea || o.driving || o.jailed || o.isle !== this.isle) continue;
       const r = this.R(o), d = dist(this.pos, o.pos);
       const hears = (o.inNeed && r > 0.2 && d < S * 3) || (o.wanted && d < S * 4);   // news of a killer travels
       if (!(d < S * 1.5) && !hears) continue;
@@ -1220,7 +1288,10 @@ class Agent {
       const o = this.other;
       if (!o.alive || o.atSea || ++this.work > 400) { this.done(); return; }
       if (this.controlled) { if (dist2(o.pos, this.pos) > 5) { this.done(); return; } }   // player walked away
-      else if (!this.moveTo(o.pos, 2.2)) return;
+      else {
+        if (!this.moveTo(o.pos, 2.2)) return;
+        if (dist2(o.pos, this.pos) > 4) { this.block(this.action, o, 200); this.done(); return; }   // couldn't reach them
+      }
       const fx = o.pos.x - this.pos.x, fy = o.pos.y - this.pos.y, L = Math.hypot(fx, fy);
       if (L > 1e-6) this.facing = { x: fx / L, y: fy / L };
       this.interact(o);
@@ -1251,7 +1322,7 @@ class Agent {
       case 'Snack':
         if (this.inv.fish > 0) { this.inv.fish--; this.hunger = clamp(this.hunger - 0.4); }
         else if (this.inv.food > 0) { this.inv.food--; this.hunger = clamp(this.hunger - 0.3); }
-        else if (this.controlled && this.inv.sunberry > 0) { this.inv.sunberry--; this.hunger = clamp(this.hunger - 0.45); }
+        else if ((this.controlled || this.origin === 2) && this.inv.sunberry > 0) { this.inv.sunberry--; this.hunger = clamp(this.hunger - 0.45); }
         this.done(); break;
       case 'ShoreFish':
         if (++this.work % 40 === 0 && w.rnd() < 0.45) { this.inv.fish++; w.fishCaught++; }
@@ -1300,7 +1371,8 @@ class Agent {
         if (++this.work % 10 === 0) {
           const sun = t.kind === 'sunbush';
           if (t.amount >= 1) { t.amount--; if (sun) this.inv.sunberry++; else this.inv.food++; }
-          if (t.amount < 1 || (sun ? this.inv.sunberry >= 8 : this.inv.food >= MAX_FOOD)) this.done();
+          const cap = sun && this.origin !== 2 ? 8 : MAX_FOOD;
+          if (t.amount < 1 || (sun ? this.inv.sunberry >= cap : this.inv.food >= MAX_FOOD)) this.done();
         }
         break;
       case 'Sleep':
@@ -1356,6 +1428,7 @@ class Agent {
         let gave = null;
         if (cw && (!cf || o.thirst >= o.hunger)) { this.inv.water--; o.thirst = clamp(o.thirst - 0.4); gave = 'water'; }
         else if (cf && this.inv.fish > 0) { this.inv.fish--; o.hunger = clamp(o.hunger - 0.4); gave = 'fish'; }
+        else if (cf && this.origin === 2 && this.inv.sunberry > 0) { this.inv.sunberry--; o.hunger = clamp(o.hunger - 0.45); gave = 'sunberries'; }
         else if (cf) { this.inv.food--; o.hunger = clamp(o.hunger - 0.35); gave = 'food'; }
         const taught = this.knowsSpring && !o.knowsSpring;
         this.shareKnowledge(o);
@@ -1726,10 +1799,11 @@ class Agent {
   // ---------- helpers ----------
   utility(g, n) {
     let u = 0;
-    // food and fish both fill you up, so each is worth less when you already carry the other
-    if (g === 'food') for (let i = 0; i < n; i++) u += 2 * (0.4 + 2.5 * this.hunger) / (1 + 0.5 * (i + this.inv.fish));
-    else if (g === 'sunberry') for (let i = 0; i < n; i++) u += (1.5 * (0.4 + 2.5 * this.hunger) + 2.2 + 1.2 * this.ambition) / (1 + 0.3 * i);   // rare and prized
-    else if (g === 'fish') for (let i = 0; i < n; i++) u += 2 * (0.45 + 2.5 * this.hunger) / (1 + 0.5 * (i + this.inv.food));
+    const staple = this.staple, lux = this.luxury;
+    // your everyday food and fish both fill you up, so each is worth less when you carry the other
+    if (g === staple) for (let i = 0; i < n; i++) u += 2 * (0.4 + 2.5 * this.hunger) / (1 + 0.5 * (i + this.inv.fish));
+    else if (g === lux) for (let i = 0; i < n; i++) u += (1.5 * (0.4 + 2.5 * this.hunger) + 2.2 + 1.2 * this.ambition) / (1 + 0.3 * i);   // foreign, rare and prized
+    else if (g === 'fish') for (let i = 0; i < n; i++) u += 2 * (0.45 + 2.5 * this.hunger) / (1 + 0.5 * (i + this.inv[staple]));
     else if (g === 'water') for (let i = 0; i < n; i++) u += 2 * (0.4 + 2.5 * this.thirst) / (1 + 0.5 * i);
     else {
       const p = this.project, need = p ? (g === 'wood' ? p.wood : p.stone) : 0;
@@ -1744,7 +1818,8 @@ class Agent {
       if (this.inv[give] === 0) continue;
       for (const get of GOODS) {
         if (give === get || o.inv[get] === 0) continue;
-        if ((give === 'food' && get === 'fish') || (give === 'fish' && get === 'food')) continue;   // no swapping one meal for another
+        const st = this.staple;
+        if ((give === st && get === 'fish') || (give === 'fish' && get === st)) continue;   // no swapping one meal for another
         let bg = PRICE[get], bt = PRICE[give];
         if (bg === bt) bg = bt = 1;
         for (let lot = 1; lot <= 3; lot++) {
@@ -1763,8 +1838,9 @@ class Agent {
     let best = null, bd = Infinity;
     const claims = this.w.claims;
     for (const r of this.knownBy[kind]) {
+      if (r.isle !== this.isle) continue;
       if (kind !== 'spring' && r.amount < 1) continue;
-      if (kind === 'bush' && claims && this.target !== r && r.amount - (claims.get(r) || 0) * 2 < 1) continue;
+      if ((kind === 'bush' || kind === 'sunbush') && claims && this.target !== r && r.amount - (claims.get(r) || 0) * 2 < 1) continue;
       const d = dist(r.pos, this.pos);
       if (d < bd) { bd = d; best = r; }
     }
@@ -1850,13 +1926,14 @@ class Agent {
   isExplored(p) { const k = this.w.cellIndex(p); return k < 0 || this.explored[k] === 1; }
   exploredFrac() {
     const w = this.w; let n = 0;
-    for (let k = 0; k < w.land.length; k++) if (w.land[k] && this.explored[k]) n++;
-    return w.landCount ? n / w.landCount : 1;
+    for (const k of (w.landCells[this.isle] || [])) if (this.explored[k]) n++;
+    const total = w.landCount[this.isle] || 0;
+    return total ? n / total : 1;
   }
   frontier() {
     const w = this.w; let best = null, bd = Infinity;
-    for (let k = 0; k < w.land.length; k++) {
-      if (!w.land[k] || this.explored[k]) continue;
+    for (const k of (w.landCells[this.isle] || [])) {
+      if (this.explored[k]) continue;
       const c = w.cellPts[k], d = dist(c, this.pos) * w.cellNoise[k];
       if (d < bd) { bd = d; best = c; }
     }
@@ -2833,7 +2910,8 @@ class Agent {
       `<span><b>${alive.length}</b> people</span><span><b>${couples}</b> couples</span>` +
       `<span><b>${homes}</b> homes</span><span><b>${alive.filter(a => a.boat).length}</b> boats</span>` +
       `<span><b>${world.fishCaught}</b> fish caught</span><span><b>${world.births}</b> born</span><span><b>${world.deaths}</b> died</span>` +
-      (world.prisoners.length ? `<span><b>${world.prisoners.length}</b> in the labyrinth</span>` : '');
+      (world.prisoners.length ? `<span><b>${world.prisoners.length}</b> in the labyrinth</span>` : '') +
+      `<span><b>${alive.filter(a => a.origin === 2).length}</b> on the far island</span>`;
     renderMazeButton();
   }
 
@@ -2881,7 +2959,7 @@ class Agent {
       if (pb) pb.onclick = () => enterPlay(a);
     }
     const kids = a.children.filter(c => c.alive);
-    const bits = [`${a.sex === 'F' ? 'Woman' : 'Man'}${a.child ? ', still a child' : ''}, ${Math.floor(a.age)} days old.`];
+    const bits = [`${a.sex === 'F' ? 'Woman' : 'Man'}${a.child ? ', still a child' : ''}, ${Math.floor(a.age)} days old${a.origin === 2 ? ', from the far island' : ''}.`];
     if (a.hasPartner) bits.push(`Partner: ${a.partner.name}.`);
     if (kids.length) bits.push(`${kids.length} ${kids.length === 1 ? 'child' : 'children'}: ${kids.map(k => k.name).join(', ')}.`);
     if (a.pregnant > 0) bits.push('Expecting a baby.');
@@ -2934,7 +3012,7 @@ class Agent {
     }
     for (const a of alive) {
       const row = rows.get(a.id);
-      const small = `${a.sex === 'F' ? 'woman' : 'man'}${a.child ? ', child' : ''}, ${Math.floor(a.age)} days`;
+      const small = `${a.sex === 'F' ? 'woman' : 'man'}${a.child ? ', child' : ''}, ${Math.floor(a.age)} days${a.origin === 2 ? ', far island' : ''}`;
       const what = a.inNeed ? 'needs help' : actionText(a);
       if (row.small.textContent !== small) row.small.textContent = small;
       if (row.what.textContent !== what) row.what.textContent = what;
@@ -3653,8 +3731,8 @@ class Agent {
     if (a.wanted && !play.wantedWarned) { play.wantedWarned = true; toast('You are wanted for murder. The islanders will try to lock you in the labyrinth.', 'fight'); }
     if (!a.wanted) play.wantedWarned = false;
     if (world.onIsle2(a.pos) && !a.atSea && !a.jailed) {
-      if (!world.isle2Found) { world.isle2Found = true; world.log(`${a.name} discovered a faraway island full of palms and sunberries!`, 'build'); }
-      if (!play.isleHint) { play.isleHint = true; toast('Sunberries grow only here. Islanders back home will pay a lot of wood or stone for them.', 'trade'); }
+      if (!world.isle2Found && a.origin !== 2) { world.isle2Found = true; world.log(`${a.name} reached the far island and met its people!`, 'build'); }
+      if (!play.isleHint && a.origin !== 2) { play.isleHint = true; toast('The people here live on sunberries and treat ordinary berries as a rare treat. Back home it’s the other way round, so trade both ways!', 'trade'); }
     }
     for (const e of world.events) if (e.tick > play.lastTick && me.test(e.msg)) toast(e.msg, e.kind);
     for (const o of world.agents) {          // warn before a fight reaches you

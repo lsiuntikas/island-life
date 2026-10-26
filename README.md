@@ -88,19 +88,6 @@ Greyed-out actions always explain why they aren't possible yet, for example *"yo
 
 ---
 
-## Running it
-
-It's a single self-contained page, so you can just open the file:
-
-1. Download `index.html`.
-2. Double-click it to open it in a modern browser (Chrome, Edge, Firefox or Safari).
-
-You need an internet connection the first time, so the page can load Three.js and the fonts from a CDN.
-
-No framework or build settings are needed. Vercel serves the HTML file as it is.
-
----
-
 ## How it's built
 
 | Part | Language | Roughly |
@@ -127,18 +114,6 @@ every tick, for every islander:
   keep doing the current action unless something else is clearly better
   carry out the action (walk there, then do it)
 ```
-
----
-
-## History
-
-The project started as a C# script for **Rhino 3D** (a single agent on an island, drawn in the Rhino viewport). It grew into a multi-agent society there, and was then ported to the browser and extended with boats, fishing, a second island, first-person play, cars, crime and the labyrinth.
-
----
-
-## Todo
-
-- Paths and roads that form where people walk most often.
 
 ---
 
