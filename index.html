@@ -3257,6 +3257,7 @@ class Agent {
   const hud = $('play-hud'), pmenu = $('play-menu');
 
   function enterPlay(a) {
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     if (!a || !a.alive) return;
     if (play.a) play.a.controlled = false;
     if (!play.on) play.prevSpeed = view.speed;
@@ -3582,7 +3583,7 @@ class Agent {
     a.done(); a.flying = true; k.speed = 0; k.vy = 0;
     a.pos = { x: k.x, y: k.y, z: world.H(k.x, k.y) };
     play.camYaw = 0;
-    toast('W for more throttle, S for less, A and D to turn. Speed up, then hold Space to take off. Shift to descend. To land, slow down and come down over land.', 'build');
+    toast('Hold Space to take off, then Space to climb and Shift to descend. A and D turn, W and S change speed. To land, hold Shift over flat land.', 'build');
   }
   function landNow(a) {           // leaving play mid-flight: the plane glides safely down
     const k = a.plane; a.flying = false; k.speed = 0; k.vy = 0; k.vpitch = 0; k.roll = 0; k.air = false;
@@ -3691,7 +3692,11 @@ class Agent {
       if (act.ok) act.fn(); else toast(`Can’t ${act.label[0].toLowerCase() + act.label.slice(1)}: ${act.why}.`, 'warn');
     }
   }, true);
-  window.addEventListener('keyup', e => { const k = e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key; play.keys.delete(k === 'Shift' ? 'Shift' : k); });
+  window.addEventListener('keyup', e => {
+    const k = e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key;
+    play.keys.delete(k === 'Shift' ? 'Shift' : k);
+    if (play.on && e.key === ' ') e.preventDefault();      // don't let Space press a focused button
+  }, true);
   window.addEventListener('blur', () => play.keys.clear());
 
   // ---------- moving and the camera ----------
@@ -3726,19 +3731,25 @@ class Agent {
       }
       if (throttle > 0.1) k.speed += throttle * 14 * dt;
       else if (throttle < -0.1) k.speed -= -throttle * (onGround ? 22 : 12) * dt;
-      k.speed = clamp(k.speed * (1 - (onGround && throttle <= 0 ? 0.9 : 0.05) * dt), 0, 48);
+      const braking = onGround && throttle <= 0 && climb <= 0;
+      k.speed = clamp(k.speed * (1 - (braking ? 0.9 : onGround ? 0.05 : 0.02) * dt), 0, 48);
       if (k.speed > 3) k.h += turn * dt * (onGround ? 1.4 : 1.0);           // D turns right
       k.roll = (k.roll || 0) + ((onGround ? 0 : -turn * 0.5) - (k.roll || 0)) * Math.min(1, dt * 3);
       if (onGround) {
         k.vy = 0; k.alt = ground;
-        if (k.speed > 16 && climb > 0) { k.air = true; k.vy = 6; k.alt = ground + 0.6; toast('Lift-off!', 'build'); }
+        if (climb > 0) {                                                    // Space: full power down the runway, then lift off
+          k.speed = Math.min(48, k.speed + 18 * dt);
+          if (k.speed > 16) { k.air = true; k.vy = 7; k.alt = ground + 0.8; toast('Lift-off! Space to climb, Shift to descend.', 'build'); }
+        }
       } else {
-        const target = k.speed < 16 ? -9 : climb * (7 + k.speed * 0.12);   // too slow and you sink
+        if (throttle > -0.1 && k.speed < 26) k.speed += (26 - k.speed) * Math.min(1, dt * 0.9);   // the engine holds cruising speed
+        if (world.H(k.x, k.y) < 0.4 && k.speed < 16) k.speed = 16;           // over the sea you can't slow to a stall
+        const target = k.speed < 14 ? -9 : climb * (8 + k.speed * 0.12);   // no key: hold your height; too slow: sink
         k.vy += (target - k.vy) * Math.min(1, dt * 2.5);
         k.alt = Math.min(150, k.alt + k.vy * dt);
         if (k.alt <= ground + 0.1) {
           if (world.H(k.x, k.y) < 0.4) { k.alt = ground + 1.5; k.vy = 3; if (!play.waterWarned) { toast('You can’t land on water. Fly over land to come down.', 'warn'); play.waterWarned = true; } }
-          else if (k.speed > 26) { k.alt = ground + 0.6; k.vy = 4; toast('Too fast to land! Slow down with S first.', 'warn'); }
+          else if (k.speed > 32) { k.alt = ground + 0.6; k.vy = 4; toast('Too fast to land! Slow down with S first.', 'warn'); }
           else { k.alt = ground; k.vy = 0; k.air = false; play.waterWarned = false; toast('Touchdown. Nice landing!', 'help'); }
         }
       }
