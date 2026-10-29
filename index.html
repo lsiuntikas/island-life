@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>City Life: Times Square 1 km</title>
+<title>City Life: Shibuya 1 km</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=DotGothic16&display=swap" rel="stylesheet">
@@ -65,6 +65,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .fab{position:fixed; right:calc(env(safe-area-inset-right,0px) + 14px); border:0; border-radius:14px; padding:12px 16px; font-weight:800; font-size:15px; z-index:6; background:var(--panel-solid); box-shadow:var(--shadow)}
 #phoneBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 18px)}
 #bikeBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 74px)}
+#carBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 186px)}
+#carBtn[aria-pressed="true"]{background:var(--go); color:var(--go-ink)}
+#carBtn[hidden]{display:none}
 #viewBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 130px)}
 #viewBtn[aria-pressed="true"]{background:var(--go); color:var(--go-ink)}
 #cross{position:fixed; left:50%; top:50%; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:rgba(255,255,255,.9); box-shadow:0 0 0 1.5px rgba(0,0,0,.35); z-index:4; pointer-events:none}
@@ -75,7 +78,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .touch #joy{display:block}
 #knob{position:absolute; left:50%; top:50%; width:52px; height:52px; margin:-26px 0 0 -26px; border-radius:50%; background:rgba(255,255,255,.85); box-shadow:0 2px 8px rgba(0,0,0,.25)}
 #credit{position:fixed; left:calc(env(safe-area-inset-left,0px) + 12px); bottom:calc(env(safe-area-inset-bottom,0px) + 6px); font-size:11px; color:rgba(255,255,255,.85); text-shadow:0 1px 2px rgba(0,0,0,.6); z-index:4; max-width:60vw}
-.touch #credit{left:auto; right:calc(env(safe-area-inset-right,0px) + 14px); text-align:right; bottom:calc(env(safe-area-inset-bottom,0px) + 186px)}
+.touch #credit{left:auto; right:calc(env(safe-area-inset-right,0px) + 14px); text-align:right; bottom:calc(env(safe-area-inset-bottom,0px) + 242px)}
 #scrim{position:fixed; inset:0; background:var(--scrim); z-index:20; display:flex; align-items:flex-end; justify-content:center}
 #scrim[hidden]{display:none}
 #sheet{width:min(100%,480px); max-height:86vh; overflow:auto; background:var(--panel-solid); border-radius:22px 22px 0 0; padding:18px 18px calc(env(safe-area-inset-bottom,0px) + 18px); box-shadow:var(--shadow); -webkit-user-select:text; user-select:text}
@@ -143,15 +146,16 @@ body.pixel #yen, body.pixel #clock, body.pixel #sheet h2{letter-spacing:.02em}
 <div id="stage"></div>
 <div id="stats" class="card" aria-live="polite">
   <div class="row1"><span id="clock">8:00 am</span><span id="day">Day 1</span><span id="wx" aria-label="weather">☀️</span></div>
-  <div id="yen">$60</div>
+  <div id="yen">¥1,000</div>
   <div class="meter"><span>Energy</span><div class="bar"><i id="en"></i></div></div>
   <div class="meter"><span>Joy</span><div class="bar joy"><i id="jy"></i></div></div>
 </div>
 <div id="jobpill" class="card" hidden></div>
-<button id="mapwrap" class="card" aria-label="Open the city map"><canvas id="minimap" width="300" height="300"></canvas><div id="areaname">Times Square</div></button>
+<button id="mapwrap" class="card" aria-label="Open the city map"><canvas id="minimap" width="300" height="300"></canvas><div id="areaname">Shibuya</div></button>
 <div id="toasts"></div>
 <button id="prompt" hidden><kbd>E</kbd><span id="promptText"></span></button>
 <button id="bikeBtn" class="fab" hidden aria-pressed="false">🚲 Ride</button>
+<button id="carBtn" class="fab" hidden aria-pressed="false">🚗 Drive</button>
 <button id="viewBtn" class="fab" aria-pressed="false">👁 First person</button>
 <div id="cross" hidden></div>
 <button id="phoneBtn" class="fab" aria-label="Open phone">📱 Phone</button>
@@ -162,10 +166,10 @@ body.pixel #yen, body.pixel #clock, body.pixel #sheet h2{letter-spacing:.02em}
 <div id="scrim" hidden><div id="sheet" role="dialog" aria-modal="true"></div></div>
 <div id="intro">
   <div class="box">
-    <h1>City Life<span>Times Square, 1 × 1 km</span></h1>
-    <p>Start in the bowtie at Times Square and explore a square kilometre of Midtown: billboards, Broadway theaters, delis, food carts, Bryant Park and the red steps. Run deliveries for cash, grab a slice, catch a show and get home to your walk-up before you’re out of energy.</p>
+    <h1>City Life<span>Shibuya, 1 × 1 km</span></h1>
+    <p>Start at the scramble crossing and explore a whole square kilometre of streets, shops, parks and a shrine. Run deliveries for yen, rent a bike, eat at konbini and get home before you’re out of energy.</p>
     <p>The phone’s World tab rebuilds any 100 m to 1 km of the real world from OpenStreetMap, with real heights, roof shapes, colours and building parts wherever they’re mapped.</p>
-    <div class="keys" id="introKeys">WASD or arrow keys to walk, Shift to run, drag to look around, scroll to zoom, E to interact, P for the phone, M for the map, B to ride a bike, V for first person, G to change the pixel-art look.</div>
+    <div class="keys" id="introKeys">WASD or arrow keys to walk, Shift to run, drag to look around, scroll to zoom, E to interact, P for the phone, M for the map, B to ride a bike, V for first person, C to drive a rental car, G to change the pixel-art look.</div>
     <button class="primary" id="startBtn" disabled>Building the city…</button>
   </div>
 </div>
@@ -179,7 +183,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const lerp=(a,b,t)=>a+(b-a)*t;
 const hash=n=>{const x=Math.sin(n*12.9898+78.233)*43758.5453; return x-Math.floor(x);};
 const pick=a=>a[Math.floor(Math.random()*a.length)];
-const fmtYen=n=>{ const c=Math.round(n*100); return '$'+(c%100? (c/100).toFixed(2) : Math.round(n).toLocaleString('en-US')); };
+const fmtYen=n=>'¥'+Math.round(n).toLocaleString('en-US');
 const isTouch = matchMedia('(pointer: coarse)').matches;
 if(isTouch){ document.body.classList.add('touch'); $('#introKeys').textContent='Use the stick to walk (push to the edge to run), drag anywhere to look around, pinch to zoom, tap the green button to interact, tap the minimap for the full map, and tap the eye button for first person.'; }
 
@@ -210,128 +214,125 @@ class Grid{ constructor(){ this.m=new Map(); }
   at(x,y){ return this.m.get(this.k(Math.floor(x/CELL),Math.floor(y/CELL)))||EMPTY; }
   rect(x0,y0,x1,y1){ const out=[]; const a=Math.floor(x0/CELL), b=Math.floor(x1/CELL), c=Math.floor(y0/CELL), d=Math.floor(y1/CELL); for(let i=a;i<=b;i++) for(let j=c;j<=d;j++){ const l=this.m.get(this.k(i,j)); if(l) for(const o of l) out.push(o); } return out; } }
 
-/* ---------------- Midtown Manhattan around Times Square (generated sketch) ----------------
-   Built in a grid-aligned frame (x crosstown toward the East Side, y uptown along the avenues),
-   then turned 29 degrees like the real Manhattan grid. */
-function rectSegDist(r,a,b){
-  let t0=0,t1=1; const dx=b[0]-a[0], dy=b[1]-a[1], p=[-dx,dx,-dy,dy], q=[a[0]-r[0], r[2]-a[0], a[1]-r[1], r[3]-a[1]]; let hit=true;
-  for(let i=0;i<4;i++){ if(p[i]===0){ if(q[i]<0){ hit=false; break; } } else { const t=q[i]/p[i]; if(p[i]<0){ if(t>t1){ hit=false; break; } if(t>t0) t0=t; } else { if(t<t0){ hit=false; break; } if(t<t1) t1=t; } } }
-  if(hit) return 0;
-  let m=1e9; for(const c of [[r[0],r[1]],[r[2],r[1]],[r[2],r[3]],[r[0],r[3]]]) m=Math.min(m,segDist(c[0],c[1],a,b));
-  for(const q2 of [a,b]){ const ex=Math.max(r[0]-q2[0],0,q2[0]-r[2]), ey=Math.max(r[1]-q2[1],0,q2[1]-r[3]); m=Math.min(m,Math.hypot(ex,ey)); }
-  return m;
+/* ---------------- the hand-laid Shibuya core (local metres, x east, y north) ---------------- */
+function coreSketch(){
+  const B=(name,kind,h,pts,btype,extra)=>Object.assign({name,kind,tagH:h,pts,btype:btype||'yes'},extra||{});
+  return {
+    title:'Shibuya Crossing', label:'Shibuya Crossing', source:'sketch', half:50, center:[35.65950,139.70055],
+    buildings:[
+      B('QFRONT','cafe',34,[[-12,8],[-40,6],[-40,30],[-23,30]],'retail',{material:'glass'}),
+      B('Ramen shop','food',16,[[-42,6],[-62,3],[-62,30],[-42,30]],'retail'),
+      B('Big screen building','',28,[[-10,22],[-4,20],[-2,45],[-16,45]],'commercial',{material:'glass'}),
+      B('Karaoke tower','fun',40,[[-25,33],[-52,33],[-52,58],[-34,58]],'commercial'),
+      B('Konbini','konbini',12,[[10,10],[26,10],[26,28],[11,28]],'retail'),
+      B('Department store','shop',46,[[28,10],[58,10],[58,40],[28,40]],'retail'),
+      B('Café','cafe',18,[[12,30],[26,30],[26,52],[14,52]],'retail'),
+      B('','',22,[[28,42],[58,42],[58,62],[28,62]],'office'),
+      B('','',24,[[14,54],[26,54],[26,64],[15,64]],'apartments'),
+      B('Fast food','food',16,[[-10,-10],[-35,-12],[-35,-35],[-10,-35]],'retail'),
+      B('Hotel','',30,[[-37,-14],[-62,-19],[-62,-42],[-37,-42]],'hotel'),
+      B('Your apartment','home',20,[[-11,-38],[-35,-38],[-35,-62],[-12,-62]],'apartments'),
+      B('Shoe store','shop',14,[[-38,-44],[-62,-44],[-62,-62],[-38,-62]],'retail'),
+      B('Shibuya Station','station',22,[[9,-32],[62,-32],[62,-62],[6,-62]],'train_station'),
+      B('Koban','koban',5,[[48,-11],[55,-11],[55,-17],[48,-17]],'house',{roofShape:'hipped'})
+    ],
+    roads:[
+      {kind:'road',w:14,pts:[[-80,-14],[-62,-10],[-30,-3],[0,0],[30,2],[80,2]]},
+      {kind:'road',w:13,pts:[[-5,-80],[-4,-60],[-2,-30],[0,0],[4,30],[8,60],[10,76]]},
+      {kind:'pedestrian',w:7,pts:[[-10,10],[-25,45],[-31,62],[-35,76]]}
+    ],
+    areas:[
+      {kind:'road',pts:[[-9,-9],[9,-9],[9,9],[-9,9]]},
+      {kind:'plaza',pts:[[9,-9],[46,-9],[46,-29],[9,-29]]},
+      {kind:'grass',pts:[[30,-19],[43,-19],[43,-27],[30,-27]]}
+    ],
+    crossings:[ [[-9,-8],[-9,8]], [[-8,9],[8,9]], [[9,8],[9,-8]], [[8,-9],[-8,-9]], [[-7,-7],[7,7]], [[-7,7],[7,-7]] ],
+    pois:[
+      {kind:'statue',name:'Hachiko statue',x:22,y:-17,dog:true},
+      {kind:'vending',name:'Vending machine',x:-55,y:31.5},
+      {kind:'vending',name:'Vending machine',x:47,y:-22},
+      {kind:'vending',name:'Vending machine',x:-36,y:-36.5}
+    ],
+    trees:[[14,-13],[18,-25],[33,-23],[39,-24],[40,-13]],
+    toriis:[],
+    spots:[{name:'Scramble center',x:0,y:0},{name:'Hachiko statue',x:22,y:-14},{name:'Center Gai gate',x:-12.6,y:16},{name:'Station front',x:20,y:-30.5},{name:'QFRONT corner',x:-14,y:6.8}],
+    spawn:[20,-13],
+    scramble:{x:0,y:0,zones:[[8.6,10.6,1.2],[13,-12,3],[-8.8,-9.3,0.9],[-10.8,9.2,1.4]]}
+  };
 }
-const GRID_A=29*Math.PI/180, GSX=Math.sin(GRID_A), GCY=Math.cos(GRID_A);
-const gRot=p=>[p[0]*GCY+p[1]*GSX, -p[0]*GSX+p[1]*GCY];
+
+/* procedural city around the core: a Tokyo-like street grid with lots, parks and a shrine */
 function sketchWorld(size){
-  size=size||1000; const H=size/2, E=H*1.37+25, R=mulberry(40758), Rp=a=>a[Math.floor(R()*a.length)];
-  const w={title:'Times Square', label:`Times Square, ${size>=1000?'1 × 1 km':size+' × '+size+' m'}`, source:'sketch', half:H, center:[40.7580,-73.9855],
-    buildings:[], roads:[], areas:[], crossings:[], pois:[], trees:[], toriis:[], spots:[], signals:[], steam:[], hydrants:[], noPoles:true, sidewalk:4.5};
-  const SW=4.5, SWA=5;
-  const AVE=[{x:-540,w:18,ow:-1},{x:-270,w:20,ow:1},{x:0,w:20,ow:-1},{x:280,w:20,ow:1},{x:560,w:18,ow:-1}].filter(a=>Math.abs(a.x)<E);
-  const bx=y=>-0.32*(y-80), P0=-240, P1=200;
-  const STREETS=[]; for(let k=-9;k<=9;k++){ const y=80*k; if(Math.abs(y)>E-10) continue; const n=45+k; STREETS.push({y,n,w:n===42?18:10,ow:n===42?0:(n%2===0?1:-1)}); }
-  for(const a of AVE) w.roads.push({kind:'road',w:a.w,oneway:a.ow,pts:[[a.x,-E],[a.x,E]]});
-  for(const s of STREETS) w.roads.push({kind:'road',w:s.w,oneway:s.ow,pts:[[-E,s.y],[E,s.y]]});
-  const bpts=(y0,y1)=>{ const pts=[]; const n=Math.max(1,Math.ceil((y1-y0)/60)); for(let i=0;i<=n;i++){ const y=y0+(y1-y0)*i/n; pts.push([bx(y),y]); } return pts; };
-  w.roads.push({kind:'road',w:16,oneway:-1,pts:bpts(-E,P0)});
-  w.roads.push({kind:'pedestrian',w:20,pts:bpts(P0,P1)});
-  w.roads.push({kind:'road',w:16,oneway:-1,pts:bpts(P1,E)});
-  // every road with the sidewalk it needs, for keeping buildings off them
-  const OBS=[]; for(const r of w.roads){ const sw=r.w>=16?SWA:SW; for(let i=0;i<r.pts.length-1;i++) OBS.push({a:r.pts[i],b:r.pts[i+1],hw:r.w/2+sw}); }
-  const occ=new Grid(); const ovl=(a,b,m)=> a[0]<b[2]+m && a[2]>b[0]-m && a[1]<b[3]+m && a[3]>b[1]-m;
-  const free=r=>{ for(const o of OBS) if(rectSegDist(r,o.a,o.b)<o.hw) return false; for(const o of occ.rect(r[0],r[1],r[2],r[3])) if(ovl(r,o,0.2)) return false; return true; };
+  const w=coreSketch(); if(!size || size<=100) return w;
+  const R=mulberry(20261027), Rp=a=>a[Math.floor(R()*a.length)], H=size/2, E=H+25;
+  w.half=H; w.label=`Shibuya, ${size>=1000?'1 × 1 km':size+' × '+size+' m'}`;
+  const lines=[]; const add=(v,c,a0,a1,wd,kind)=>lines.push({v,c,a0,a1,w:wd,kind:kind||'road'});
+  add(true,10,60,E,12); add(true,-5,-E,-60,14); add(false,2,60,E,14); add(false,-14,-E,-60,14);
+  add(true,-35,60,Math.min(E,240),7,'pedestrian');
+  for(const v of [true,false]) for(const s of [1,-1]){ let p=88+R()*6, i=0;
+    while(p<H-6){ const av=(i%4===3); const wd=av?16:(R()<0.25?9:6); add(v, s*p, -E, E, wd, (!av && wd===6 && R()<0.12)?'pedestrian':'road'); p+=45+R()*25; i++; } }
+  for(const l of lines) w.roads.push({kind:l.kind, w:l.w, pts: l.v?[[l.c,l.a0],[l.c,l.a1]]:[[l.a0,l.c],[l.a1,l.c]]});
+  const rects=lines.map(l=> l.v?[l.c-l.w/2,l.a0,l.c+l.w/2,l.a1]:[l.a0,l.c-l.w/2,l.a1,l.c+l.w/2]);
+  const ovl=(a,b,m)=> a[0]<b[2]+m && a[2]>b[0]-m && a[1]<b[3]+m && a[3]>b[1]-m;
+  const occ=new Grid(); const CORE=[-66,-66,66,66];
+  const free=(r,road)=>{ if(ovl(r,CORE,0)) return false; if(r[0]<-H-6||r[2]>H+6||r[1]<-H-6||r[3]>H+6) return false;
+    for(const q of rects) if(ovl(r,q,road)) return false; for(const o of occ.rect(r[0],r[1],r[2],r[3])) if(ovl(r,o,0.3)) return false; return true; };
   const occAdd=r=>occ.add(r,r[0],r[1],r[2],r[3]);
   const rectPts=r=>[[r[0],r[1]],[r[2],r[1]],[r[2],r[3]],[r[0],r[3]]];
-  // landmarks first
-  const tower=[[16,-226],[50,-226],[43,-176],[16,-176]];
-  w.buildings.push({name:'Times Tower',kind:'',tagH:110,pts:tower,style0:'office',billboardAll:true,ticker:true}); occAdd([16,-226,50,-176]);
-  const bp=[296,-386,520,-254];
-  if(bp[0]<E){ occAdd(bp); w.areas.push({kind:'plaza',pts:rectPts(bp)}); w.areas.push({kind:'grass',pts:rectPts([bp[0]+9,bp[1]+9,bp[2]-9,bp[3]-9])});
-    for(let x=bp[0]+4;x<=bp[2]-4;x+=9){ w.trees.push([x,bp[1]+4.5]); w.trees.push([x,bp[3]-4.5]); }
-    for(let y=bp[1]+13;y<=bp[3]-13;y+=10){ w.trees.push([bp[0]+4.5,y]); w.trees.push([bp[2]-4.5,y]); }
-    w.spots.push({name:'Bryant Park lawn',x:400,y:-320}); }
-  w.tkts={x:-18,y:118};
-  w.pois.push({kind:'statue',name:'Duffy Square statue',x:-29,y:174});
-  // lots: avenue frontages first (they take the corners), then the side streets
-  const FOOD=['Pizza by the slice','Diner','Halal grill','Burger joint','Bagel shop','Deli & grill','Taco spot','Ramen bar','Steakhouse'], CAFE=['Coffee shop','Bakery café','Espresso bar'],
-    SHOP=['Souvenir shop','Pharmacy','Sneaker store','Electronics','Bookstore','Candy store'], DELI=['Deli','Bodega','24-hour deli'], FUN=['Arcade','Comedy club'],
-    THEATERS=['Grand Theatre','Starlight Theatre','Empire Stage','Lyric Hall','Globe Stage','Majesty Theatre','Crown Theatre','Liberty Stage'];
-  let theaterN=0; const walkups=[];
-  function place(r, front){ // front: {type:'ave'|'street', x or y, n}
-    const cx=(r[0]+r[2])/2, cy=(r[1]+r[3])/2, tsq=Math.abs(cx-bx(cy))<115 && cy>-300 && cy<260, sixth=cx>200, hk=cx<-200, area=(r[2]-r[0])*(r[3]-r[1]);
-    let style0, levels, kind='', name='';
-    if(tsq && (front.type==='ave' && front.x===0 || Math.abs(cx-bx(cy))<45)){ style0=R()<0.5?'glass':'office'; levels=22+R()*28; }
-    else if(front.type==='ave' && sixth){ style0=R()<0.7?'glass':'limestone'; levels=28+R()*30; }
-    else if(front.type==='street' && front.n===42){ style0=Rp(['glass','office','limestone']); levels=18+R()*28; }
-    else if(front.type==='ave'){ style0=Rp(['limestone','limestone','office','brick','glass']); levels=style0==='brick'?5+R()*4:9+R()*16; }
-    else if((front.n===44||front.n===45) && cx>-262 && cx<-15 && theaterN<8 && (r[2]-r[0])>=20 && R()<0.55){ style0='limestone'; levels=4+R()*2; kind='theater'; name=THEATERS[theaterN++]; }
-    else if(hk){ style0='brick'; levels=4+R()*3; }
-    else { const q=R(); style0=q<0.55?'brick':(q<0.85?'limestone':'office'); levels=style0==='brick'?5+R()*4:(style0==='limestone'?8+R()*8:14+R()*16); }
-    if(!kind && levels<30){ const q=R(); if(q<0.035){ kind='konbini'; name=Rp(DELI); } else if(q<0.08){ kind='food'; name=Rp(FOOD); } else if(q<0.1){ kind='cafe'; name=Rp(CAFE); } else if(q<0.125){ kind='shop'; name=Rp(SHOP); } else if(q<0.131){ kind='fun'; name=Rp(FUN); } }
-    const b={name,kind,pts:rectPts(r),style0,levels:Math.max(1,Math.round(levels)),btype:style0==='brick'?'apartments':(style0==='glass'||style0==='office'?'office':'commercial')};
-    if(tsq && (front.type==='ave' && front.x===0 || Math.abs(cx-bx(cy))<45) && cy>-260 && cy<240) b.billboard=true;
-    if(style0==='brick' && !kind && levels<8) walkups.push(b);
-    w.buildings.push(b);
+  // parks and a shrine
+  const nParks=Math.max(1,Math.round(8*(size/1000)*(size/1000))); let parks=0;
+  for(let t=0;t<400 && parks<nParks;t++){
+    const sw=30+R()*36, sh=30+R()*36, x=(R()*2-1)*(H-50), y=(R()*2-1)*(H-50), r=[x,y,x+sw,y+sh];
+    if(!free(r,1.6)) continue; occAdd(r); parks++;
+    w.areas.push({kind:'grass',pts:rectPts(r)});
+    const shrine = parks===1;
+    for(let k=0;k<8+R()*8;k++){ const tx=r[0]+3+R()*(sw-6), ty=r[1]+3+R()*(sh-6); if(shrine && Math.abs(tx-(x+sw/2))<6) continue; w.trees.push([tx,ty]); }
+    if(shrine){ const cx=x+sw/2; w.areas.push({kind:'plaza',pts:rectPts([cx-3,r[1],cx+3,r[3]-10])});
+      w.buildings.push({name:'Shrine',kind:'shrine',btype:'shrine',levels:1,roofShape:'hipped',pts:rectPts([cx-5,r[3]-10,cx+5,r[3]-3])});
+      w.toriis.push({x:cx,y:r[1]+4}); w.spots.push({name:'Shrine gate',x:cx,y:r[1]+1.5}); }
+    else if(parks<=4) w.spots.push({name:pick(['Park bench','Pond view','Playground','Ginkgo tree'])+' '+parks,x:x+sw/2,y:y+sh/2});
   }
-  for(const a of AVE) for(const s of [1,-1]){ let t=-E+2;
-    while(t<E-4){ const f=(Math.abs(a.x)<150?18:12)+R()*22, d=24+R()*7, o=a.w/2+SWA; let ok=false;
-      for(const ff of [f,f*0.6,f*0.35]){ const x0=a.x+s*o, x1=a.x+s*(o+d), r=[Math.min(x0,x1),t,Math.max(x0,x1),t+ff]; if(free(r)){ occAdd(r); place(r,{type:'ave',x:a.x}); t+=ff+0.3; ok=true; break; } }
-      if(!ok) t+=3; } }
-  for(const st of STREETS) for(const s of [1,-1]){ let t=-E+2;
-    while(t<E-4){ const near=x=>AVE.some(a=>Math.abs(a.x-x)<60); const hk=t<-200;
-      const f = hk ? 7+R()*5 : (near(t)?14+R()*16:8+R()*14), d=24+R()*6, o=st.w/2+SW; let ok=false;
-      for(const ff of [f,f*0.6]){ const y0=st.y+s*o, y1=st.y+s*(o+d), r=[t,Math.min(y0,y1),t+ff,Math.max(y0,y1)]; if(free(r)){ occAdd(r); place(r,{type:'street',n:st.n}); t+=ff+(hk?0.2:0.4); ok=true; break; } }
-      if(!ok) t+=3; } }
-  // your walk-up, and the precinct
-  walkups.sort((a,b)=>Math.hypot(centroid(a.pts)[0]+380,centroid(a.pts)[1]-120)-Math.hypot(centroid(b.pts)[0]+380,centroid(b.pts)[1]-120));
-  if(walkups[0]){ walkups[0].kind='home'; walkups[0].name='Your apartment'; walkups[0].levels=5; }
-  const pc=walkups.find(b=>{ const c=centroid(b.pts); return c[0]>-320 && c[0]<-150 && c[1]>150 && c[1]<330 && !b.kind; }); if(pc){ pc.kind='koban'; pc.name='Police precinct'; pc.levels=4; pc.style0='limestone'; }
-  // the street furniture of Midtown
-  w.pois.push({kind:'koban',name:'Police',x:64,y:-120,kiosk:true});
-  const SUB=[[12.8,-228.5,'Times Sq–42 St'],[-12.8,-251.5,'Times Sq–42 St'],[-257,-228.5,'42 St–Port Authority'],[293,-228.5,'42 St–Bryant Park'],[12.8,392.7,'50 St'],[-257,316.5,'50 St']];
-  for(const [x,y,n] of SUB) w.pois.push({kind:'subway',name:n,x,y,kiosk:true});
-  const CARTS=[[13,-180,'Hot dog cart'],[-13,-100,'Halal cart'],[13,22,'Pretzel cart'],[40,-40,'Halal cart'],[293,-150,'Hot dog cart'],[-257,40,'Halal cart'],[150,-228.5,'Candied nuts cart'],[-13,280,'Hot dog cart']];
-  for(const [x,y,n] of CARTS) w.pois.push({kind:'cart',name:n,x,y,kiosk:true});
-  for(const [x,y] of [[-140,0],[140,-80],[-380,160],[400,240],[130,320],[-130,-400]]) w.steam.push([x,y]);
-  // corners: zebra crosswalks, hydrants and signals
-  for(const s of STREETS){
-    const cross=[]; for(const a of AVE) cross.push({x:a.x,w:a.w,ux:0,uy:1});
-    if(s.y<P0-5 || s.y>P1+5){ const l=Math.hypot(-0.32,1); cross.push({x:bx(s.y),w:16,ux:-0.32/l,uy:1/l}); }
-    for(const c of cross){
-      w.signals.push({x:c.x,y:s.y,ux:c.ux,uy:c.uy,wa:c.w,ws:s.w});
-      for(const sg of [1,-1]){ const y=s.y+sg*(s.w/2+2.4); w.crossings.push([[c.x-c.w/2,y],[c.x+c.w/2,y]]); const x=c.x+sg*(c.w/2+2.4); w.crossings.push([[x,s.y-s.w/2],[x,s.y+s.w/2]]); }
-      w.hydrants.push([c.x+c.w/2+SWA*0.35, s.y+s.w/2+3.5]); if(R()<0.5) w.hydrants.push([c.x-c.w/2-SWA*0.35, s.y-s.w/2-3.5]);
-    }
-  }
-  // street trees on the quieter side streets
-  for(const s of STREETS){ if(s.n===42) continue; for(let x=-E+5;x<E-5;x+=11) for(const sg of [1,-1]){ if(R()>0.35) continue; if(AVE.some(a=>Math.abs(a.x-x)<26)) continue; if(Math.abs(x-bx(s.y))<70 && s.y>-300 && s.y<260) continue; w.trees.push([x, s.y+sg*(s.w/2+1.1)]); } }
-  // photo spots
-  w.spots.push({name:'Times Square bowtie',x:bx(-60),y:-60},{name:'Red steps',x:-17,y:104},{name:'News ticker',x:bx(-205),y:-205},{name:'Duffy Square statue',x:-29,y:170},
-    {name:'Theater Row',x:-130,y:-73},{name:'42nd Street',x:-150,y:-229},{name:'Sixth Avenue towers',x:292,y:100},{name:'Hell’s Kitchen walk-ups',x:-400,y:87},
-    {name:'Subway entrance',x:12.8,y:-222},{name:'Steam stack',x:-140,y:8});
-  w.spawn=[bx(-100),-100];
-  // turn the whole grid 29 degrees and keep what falls inside the square
-  // add points every 20 m so streets can be trimmed to the square after turning
-  for(const r of w.roads){ const out=[r.pts[0]]; for(let i=1;i<r.pts.length;i++){ const a=r.pts[i-1], b=r.pts[i], n=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/20)); for(let k=1;k<=n;k++) out.push([a[0]+(b[0]-a[0])*k/n, a[1]+(b[1]-a[1])*k/n]); } r.pts=out; }
-  const L=H+15, inside=p=>Math.abs(p[0])<L && Math.abs(p[1])<L, rp=a=>a.map(gRot), rdir=(x,y)=>[x*GCY+y*GSX, -x*GSX+y*GCY];
-  w.buildings=w.buildings.map(b=>Object.assign(b,{pts:rp(b.pts)})).filter(b=>inside(centroid(b.pts)));
-  w.roads.forEach(r=>r.pts=rp(r.pts));
-  w.areas=w.areas.map(a=>({kind:a.kind,pts:rp(a.pts)}));
-  w.crossings=w.crossings.map(rp).filter(c=>c.some(inside));
-  for(const p of w.pois){ [p.x,p.y]=gRot([p.x,p.y]); } w.pois=w.pois.filter(p=>inside([p.x,p.y]));
-  w.trees=w.trees.map(gRot).filter(inside); w.steam=w.steam.map(gRot).filter(inside); w.hydrants=w.hydrants.map(gRot).filter(inside);
-  w.signals=w.signals.map(s=>{ const p=gRot([s.x,s.y]), d=rdir(s.ux,s.uy); return Object.assign(s,{x:p[0],y:p[1],ux:d[0],uy:d[1]}); }).filter(s=>inside([s.x,s.y]));
-  for(const s of w.spots){ [s.x,s.y]=gRot([s.x,s.y]); } w.spots=w.spots.filter(s=>inside([s.x,s.y]));
-  w.spawn=gRot(w.spawn); { const t=gRot([w.tkts.x,w.tkts.y]), f=rdir(0,-1); w.tkts={x:t[0],y:t[1],fx:f[0],fy:f[1]}; }
+  // lots along every street
+  const NAMES={food:['Ramen shop','Izakaya','Sushi bar','Udon shop','Curry house','Yakitori bar','Gyoza stand'],cafe:['Café','Kissaten','Bakery café','Tea house'],shop:['Bookstore','Drugstore','Record shop','Clothing store','Stationery shop','100-yen shop','Sneaker shop'],fun:['Arcade','Karaoke box']};
+  const smalls=[];
+  for(const l of lines){ const wide=l.w>=12;
+    for(const s of [1,-1]){ let t=l.a0+2;
+      while(t<l.a1-4){
+        const f=wide?12+R()*18:7+R()*11, d=wide?14+R()*14:8+R()*12, gap=R()<0.12?2.4:0.5, o=l.w/2+1.8;
+        let placed=false;
+        for(const ff of [f, f*0.55]){ for(const dd of [d, d*0.6]){
+          let r; if(l.v){ const a=l.c+s*o, b=l.c+s*(o+dd); r=[Math.min(a,b),t,Math.max(a,b),t+ff]; } else { const a=l.c+s*o, b=l.c+s*(o+dd); r=[t,Math.min(a,b),t+ff,Math.max(a,b)]; }
+          if(!free(r,1.6)) continue; occAdd(r); placed=true;
+          const cx=(r[0]+r[2])/2, cy=(r[1]+r[3])/2, dc=Math.hypot(cx,cy)/H;
+          let kind='', name=''; const q=R();
+          if(q<0.022){kind='konbini'; name='Konbini';} else if(q<0.05){kind='food'; name=Rp(NAMES.food);} else if(q<0.065){kind='cafe'; name=Rp(NAMES.cafe);} else if(q<0.082){kind='shop'; name=Rp(NAMES.shop);} else if(q<0.088){kind='fun'; name=Rp(NAMES.fun);}
+          const area=(r[2]-r[0])*(r[3]-r[1]); let btype, levels;
+          if(wide){ btype=kind?'retail':(R()<0.6?'office':'commercial'); levels=4+R()*11*(1-dc*0.55)+(dc<0.35?R()*12:0); }
+          else if(kind){ btype='retail'; levels=2+R()*4; }
+          else if(dc>0.22 && area<170 && R()<0.8){ btype='house'; levels=R()<0.8?2:3; }
+          else { btype=R()<0.7?'apartments':'commercial'; levels=3+R()*4+(R()<0.06?6:0); }
+          const b={name,kind,pts:rectPts(r),btype,levels:Math.max(1,Math.round(levels))}; w.buildings.push(b); if(!kind && btype==='house') smalls.push(b);
+          if(R()<0.035){ const off=l.w/2+1.1; w.pois.push(l.v?{kind:'vending',name:'Vending machine',x:l.c+s*off,y:cy}:{kind:'vending',name:'Vending machine',x:cx,y:l.c+s*off}); }
+          t+=ff+gap; break; } if(placed) break; }
+        if(!placed) t+=4;
+      } } }
+  for(let i=0;i<3 && smalls.length;i++){ const b=smalls.splice(Math.floor(R()*smalls.length),1)[0]; b.kind='koban'; b.name='Koban'; b.levels=1; b.roofShape='hipped'; }
+  // street trees on the wide roads
+  for(const l of lines){ if(l.w<12) continue; for(let t=l.a0+6;t<l.a1;t+=13) for(const s of [1,-1]){ const off=l.c+s*(l.w/2+0.45); const p=l.v?[off,t]:[t,off];
+      if(Math.abs(p[0])<70 && Math.abs(p[1])<70) continue; if(Math.abs(p[0])>H+5||Math.abs(p[1])>H+5) continue;
+      if(rects.some((q,i)=>lines[i]!==l && p[0]>q[0]-2.5 && p[0]<q[2]+2.5 && p[1]>q[1]-2.5 && p[1]<q[3]+2.5)) continue; w.trees.push(p); } }
+  // zebra crossings at intersections with a wide road
+  const VL=lines.filter(l=>l.v), HL=lines.filter(l=>!l.v); let av=0;
+  for(const a of VL) for(const b of HL){ if(b.c<a.a0||b.c>a.a1||a.c<b.a0||a.c>b.a1) continue; if(Math.abs(a.c)<70&&Math.abs(b.c)<70) continue;
+    if(Math.abs(a.c)>H+4||Math.abs(b.c)>H+4) continue;
+    if(a.w>=9||b.w>=9){ for(const s of [1,-1]){ const y=b.c+s*(b.w/2+2.4); w.crossings.push([[a.c-a.w/2,y],[a.c+a.w/2,y]]); const x=a.c+s*(a.w/2+2.4); w.crossings.push([[x,b.c-b.w/2],[x,b.c+b.w/2]]); } }
+    if(a.w>=16 && b.w>=16 && av<3){ av++; w.spots.push({name:'Avenue crossing '+av,x:a.c,y:b.c}); } }
   return w;
 }
 
 /* ---------------- OpenStreetMap (Overpass JSON) importer ---------------- */
 function kindFromTags(t){
-  if(t.shop==='convenience' || t.shop==='deli') return 'konbini';
-  if(t.amenity==='theatre') return 'theater';
-  if(t.railway==='subway_entrance') return 'subway';
+  if(t.shop==='convenience') return 'konbini';
   if(t.amenity==='cafe') return 'cafe';
   if(['restaurant','fast_food','food_court','bar','pub','ice_cream','izakaya'].includes(t.amenity) || ['bakery','confectionery','deli'].includes(t.shop)) return 'food';
   if(t.amenity==='karaoke_box' || t.leisure==='amusement_arcade' || t.amenity==='cinema') return 'fun';
@@ -421,34 +422,32 @@ function parseOverpass(data, lat0, lon0, title, half, retry){
 
 /* ---------------- kinds and menus ---------------- */
 const KIND={
-  konbini:{label:'Deli', color:'#e0a400', verb:'Shop at'}, cafe:{label:'Coffee shop', color:'#8a5a33', verb:'Visit'},
-  food:{label:'Restaurant', color:'#e0462f', verb:'Eat at'}, fun:{label:'Arcade', color:'#9545d6', verb:'Have fun at'},
+  konbini:{label:'Konbini', color:'#1f9ad6', verb:'Shop at'}, cafe:{label:'Café', color:'#8a5a33', verb:'Visit'},
+  food:{label:'Restaurant', color:'#e0462f', verb:'Eat at'}, fun:{label:'Karaoke', color:'#9545d6', verb:'Have fun at'},
   shop:{label:'Shop', color:'#f2457a', verb:'Browse'}, station:{label:'Station', color:'#10a36d', verb:'Enter'},
-  subway:{label:'Subway', color:'#2e8b57', verb:'Go down to the'}, theater:{label:'Theater', color:'#c8333b', verb:'See a show at'},
-  cart:{label:'Food cart', color:'#f08a3c', verb:'Order at the'}, koban:{label:'Police', color:'#2d4fa8', verb:'Ask the'},
-  home:{label:'Home', color:'#d99a00', verb:'Go inside'}, vending:{label:'Vending machine', color:'#d8322e', verb:'Use the'},
-  shrine:{label:'Church', color:'#8a6a4a', verb:'Visit'}
+  koban:{label:'Police box', color:'#2d4fa8', verb:'Ask at'}, home:{label:'Home', color:'#d99a00', verb:'Go inside'},
+  vending:{label:'Vending machine', color:'#d8322e', verb:'Use the'}, shrine:{label:'Shrine', color:'#c8372d', verb:'Pray at'}
 };
-const TRINKETS=['Mini Statue of Liberty','Yellow cab toy','Snow globe','Foam crown','Big Apple magnet','Subway map tote','Pretzel keychain','Skyline mug','Broadway playbill','Pizza slice pin'];
+const TRINKETS=['Daruma doll','Maneki-neko','Furoshiki cloth','Tenugui towel','Gachapon capsule','Hachiko keychain','Origami set','Wind chime','Kokeshi doll','Sakura chopsticks'];
 const LINES=[
-  'Walk faster or step aside. Sidewalk rules, my friend.',
-  'Best pizza in the city? The one closest to you right now.',
-  'Locals avoid Times Square. And yet here I am, every single day.',
-  'The bodega cat on my block has more fans than I do.',
-  'If you’re lost, the cops at the Times Square booth are pretty helpful.',
-  'Half the subway lines in the city stop right under our feet.',
-  'Rush tickets for a show are cheaper if you’re at the red steps early.',
-  'Bryant Park is the best place to eat lunch. Don’t tell anyone.',
+  'The scramble moves about 3,000 people per green light. Wild, right?',
+  'Konbini egg sandwiches are underrated. That’s all I’ll say.',
+  'I’m meeting a friend at Hachiko. Everyone says that, so nobody finds each other.',
+  'If you’re lost, the koban officers give great directions.',
+  'Vending machines here even sell hot corn soup in winter.',
+  'There’s a little shrine tucked in one of the parks. Very peaceful.',
   'Delivery work pays better when you’re in a good mood. Trust me.',
-  'The halal cart on the corner has a line for a reason.',
-  'Steam coming out of the street? Totally normal. Probably.',
-  'A bike share pass is the fastest way across Midtown.'
+  'Last train is around midnight. After that it’s karaoke until morning.',
+  'The share bikes at the station are the fastest way across town.',
+  'I walked 12,000 steps today and I’ve still got shopping to do.',
+  'The side streets have the best tiny ramen counters.',
+  'Nice weather for a photo. Or not. Photos are good anyway.'
 ];
 
 /* ---------------- state ---------------- */
-const SAVE_KEY='citylife-nyc-save-v1';
-const state={yen:60, energy:85, joy:60, day:1, min:8*60, rain:false, job:null, album:{}, trinkets:[], bikeDay:-1, riding:false, paused:true, started:false, exhaustedWarned:false};
-function load(){ try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null'); if(s) Object.assign(state,{yen:s.yen??60, day:s.day??1, album:s.album||{}, trinkets:s.trinkets||[], energy:s.energy??85, joy:s.joy??60, bikeDay:s.bikeDay??-1}); }catch(e){} }
+const SAVE_KEY='citylife-save-v1';
+const state={yen:1000, energy:85, joy:60, day:1, min:8*60, rain:false, job:null, album:{}, trinkets:[], bikeDay:-1, riding:false, paused:true, started:false, exhaustedWarned:false};
+function load(){ try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null'); if(s) Object.assign(state,{yen:s.yen??1000, day:s.day??1, album:s.album||{}, trinkets:s.trinkets||[], energy:s.energy??85, joy:s.joy??60, bikeDay:s.bikeDay??-1}); }catch(e){} }
 function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify({yen:state.yen, day:state.day, album:state.album, trinkets:state.trinkets, energy:state.energy, joy:state.joy, bikeDay:state.bikeDay})); }catch(e){} }
 load();
 
@@ -524,19 +523,6 @@ function drawCell(kind,g,ge,x,y,cw,ch,i){
     g.fillStyle='rgba(0,0,0,.28)'; g.fillRect(x,y+ch*.86,cw,ch*.05);
     if(R()<.6){ const ax=x+cw*.64, ay=y+ch*.66; g.fillStyle='#e6e7e3'; g.fillRect(ax,ay,cw*.26,ch*.17); g.strokeStyle='#9aa0a6'; g.lineWidth=2; g.beginPath(); g.arc(ax+cw*.15,ay+ch*.085,ch*.055,0,7); g.stroke(); }
     if(R()<.25){ for(let k=0;k<4;k++){ g.fillStyle=['#f3f3f3','#7fa8d8','#f2b6c6','#e8d27a'][Math.floor(R()*4)]; g.fillRect(x+cw*(.12+k*.12), y+ch*.5, cw*.09, ch*.15); } }
-  } else if(kind==='brick'){
-    g.fillStyle='rgba(0,0,0,.12)'; for(let k=0;k<ch*.92;k+=6){ g.fillRect(x,y+k,cw,1); const off=(Math.floor(k/6)%2)*8; for(let q=x+off;q<x+cw;q+=16) g.fillRect(q,y+k,1,6); }
-    const wx=x+cw*.27, wy=y+ch*.2, ww=cw*.46, wh=ch*.48;
-    g.fillStyle='#ece6da'; g.fillRect(wx-5,wy-7,ww+10,6); g.fillRect(wx-5,wy+wh+1,ww+10,5);
-    g.fillStyle='#f4f1ea'; g.fillRect(wx-2,wy-2,ww+4,wh+4); g.fillStyle='#4f6276'; g.fillRect(wx,wy,ww,wh*0.47); g.fillRect(wx,wy+wh*0.53,ww,wh*0.47);
-    if(R()<.5){ ge.fillStyle=R()<.8?'#ffcf7a':'#d6e8ff'; ge.fillRect(wx,wy,ww,wh); }
-    if(i===1||i===2){ g.fillStyle='#16171c'; g.fillRect(x,y+ch*.76,cw,4); g.fillRect(x,y+ch*.6,cw,2); for(let q=x+2;q<x+cw;q+=6) g.fillRect(q,y+ch*.6,1.5,ch*.16);
-      if(i===1){ g.strokeStyle='#16171c'; g.lineWidth=3; g.beginPath(); g.moveTo(x+cw*.2,y+ch*.76); g.lineTo(x+cw*.95,y+ch*.99); g.stroke(); } }
-  } else if(kind==='limestone'){
-    g.fillStyle='rgba(0,0,0,.07)'; for(let k=0;k<ch;k+=12) g.fillRect(x,y+k,cw,1); g.fillStyle='rgba(0,0,0,.13)'; g.fillRect(x,y,5,ch*.92);
-    const wx=x+cw*.22, wy=y+ch*.18, ww=cw*.56, wh=ch*.56;
-    g.fillStyle='rgba(0,0,0,.25)'; g.fillRect(wx-3,wy-3,ww+6,wh+6); g.fillStyle='#4a5a6c'; g.fillRect(wx,wy,ww,wh); g.fillStyle='rgba(255,255,255,.2)'; g.fillRect(wx,wy,ww*.3,wh); g.fillStyle='rgba(0,0,0,.35)'; g.fillRect(wx+ww/2-1,wy,2,wh);
-    if(R()<.55){ ge.fillStyle=R()<.6?'#ffe2a8':'#e6efff'; ge.fillRect(wx,wy,ww,wh); }
   } else if(kind==='office'){
     g.fillStyle='#4f6479'; g.fillRect(x,y+ch*.22,cw,ch*.5); g.fillStyle='rgba(255,255,255,.18)'; g.fillRect(x,y+ch*.22,cw,ch*.12);
     g.fillStyle='rgba(0,0,0,.35)'; g.fillRect(x,y+ch*.22,3,ch*.5); g.fillRect(x+cw/2,y+ch*.22,2,ch*.5);
@@ -578,7 +564,7 @@ function drawCell(kind,g,ge,x,y,cw,ch,i){
 function facadeTex(kind){
   const ground=['shopfront','shutter','lobby'].includes(kind), Wd=512, Hd=ground?128:512, rows=ground?1:4;
   const c=cnv(Wd,Hd), e=cnv(Wd,Hd), g=c.getContext('2d'), ge=e.getContext('2d');
-  g.fillStyle=kind==='wood'?'#7a5238':(kind==='brick'?'#a85a44':'#ffffff'); g.fillRect(0,0,Wd,Hd); ge.fillStyle='#000'; ge.fillRect(0,0,Wd,Hd);
+  g.fillStyle=kind==='wood'?'#7a5238':'#ffffff'; g.fillRect(0,0,Wd,Hd); ge.fillStyle='#000'; ge.fillRect(0,0,Wd,Hd);
   const cw=Wd/4, ch=Hd/rows;
   for(let i=0;i<4;i++) for(let j=0;j<rows;j++) drawCell(kind,g,ge,i*cw,j*ch,cw,ch,i);
   return [texOf(c),texOf(e)];
@@ -592,8 +578,8 @@ function roofTexes(){
   h.fillStyle='rgba(0,0,0,.08)'; h.fillRect(0,0,256,2); h.fillRect(0,0,2,256);
   return [texOf(t),texOf(f)];
 }
-const STYLES=['house','apartment','office','glass','mixed','wood','warehouse','brick','limestone'], GROUNDS=['shopfront','shutter','lobby'];
-const FAC={}, FACNIGHT={brick:.6,limestone:.6,house:.55,apartment:.6,office:.5,glass:.4,mixed:.75,wood:.45,warehouse:.35,shopfront:.95,shutter:.75,lobby:.7};
+const STYLES=['house','apartment','office','glass','mixed','wood','warehouse'], GROUNDS=['shopfront','shutter','lobby'];
+const FAC={}, FACNIGHT={house:.55,apartment:.6,office:.5,glass:.4,mixed:.75,wood:.45,warehouse:.35,shopfront:.95,shutter:.75,lobby:.7};
 for(const k of STYLES.concat(GROUNDS)){ const [m,e]=facadeTex(k); FAC[k]=new THREE.MeshLambertMaterial({vertexColors:true, map:m, emissive:0xffffff, emissiveMap:e, emissiveIntensity:0, side:THREE.DoubleSide}); }
 const [TILE_T, FLAT_T]=roofTexes();
 const roofTileMat=new THREE.MeshLambertMaterial({vertexColors:true, map:TILE_T, side:THREE.DoubleSide});
@@ -611,10 +597,9 @@ const PALETTE={
   apartment:['#ece6da','#e3d6c2','#d8d2c8','#c9b9a3','#efefea','#cfc6b8','#b7a58c'],
   office:['#d9dde2','#c9ced6','#e2ded6','#bfc5cc'], glass:['#d6e6f2','#c4d8e8','#dce8ec','#b5cbe0'],
   mixed:['#e8e4dc','#d6d9de','#cfc7bb','#f0ece6','#c4ccd4','#dcd2c2'], wood:['#ffffff','#eee6da'],
-  warehouse:['#c8ccd0','#b9c0c4','#d4d0c6','#9fa9b2'],
-  brick:['#ffffff','#f3dccb','#e8c8b5','#dcc0b0','#f7ece4','#cdb5a8'], limestone:['#e2d9c4','#d6ccb4','#ece6d8','#cbc2ae','#ddd6cb']
+  warehouse:['#c8ccd0','#b9c0c4','#d4d0c6','#9fa9b2']
 };
-const ROOFPAL={ tile:['#5d636d','#4a5563','#6b5446','#3f4b5d','#7a4a3a','#58705f','#8b8f95'], wood:['#4b4f57','#3d4148'], flat:['#5a5c60','#4e5155','#66625c','#45484c'], metal:['#7f8a94','#8c6a55','#6f7f73'], dome:['#7a9c8a','#9aa4ad'] };
+const ROOFPAL={ tile:['#5d636d','#4a5563','#6b5446','#3f4b5d','#7a4a3a','#58705f','#8b8f95'], wood:['#4b4f57','#3d4148'], flat:['#8e8f8c','#858a8e','#9a978f','#7f8584'], metal:['#7f8a94','#8c6a55','#6f7f73'], dome:['#7a9c8a','#9aa4ad'] };
 const WHITE=new THREE.Color(1,1,1);
 function parseCol(s){ if(!s) return null; s=String(s).trim().toLowerCase().replace(/\s+/g,''); const c=new THREE.Color();
   if(/^#([0-9a-f]{3}|[0-9a-f]{6})$/.test(s)){ c.setStyle(s); return c.lerp(WHITE,0.1); }
@@ -622,8 +607,8 @@ function parseCol(s){ if(!s) return null; s=String(s).trim().toLowerCase().repla
   return null; }
 const mats={
   road:new THREE.MeshLambertMaterial({color:0x3b3f47}), footway:new THREE.MeshLambertMaterial({color:0xd4cfc3}),
-  pedestrian:new THREE.MeshLambertMaterial({color:0x8e8a90}), rail:new THREE.MeshLambertMaterial({color:0x5c524a}),
-  plaza:new THREE.MeshLambertMaterial({color:0xa49c90}), grass:new THREE.MeshLambertMaterial({color:0x7daf63}),
+  pedestrian:new THREE.MeshLambertMaterial({color:0xcbbfa9}), rail:new THREE.MeshLambertMaterial({color:0x5c524a}),
+  plaza:new THREE.MeshLambertMaterial({color:0xd8ccb5}), grass:new THREE.MeshLambertMaterial({color:0x7daf63}),
   water:new THREE.MeshLambertMaterial({color:0x5aa5d6}), parking:new THREE.MeshLambertMaterial({color:0x666a72}),
   stripe:new THREE.MeshLambertMaterial({color:0xf4f4f0}), dash:new THREE.MeshLambertMaterial({color:0xf2f2ea}),
   trunk:new THREE.MeshLambertMaterial({color:0x6b4a2f}), leaf:new THREE.MeshLambertMaterial({color:0x4f9a4a}),
@@ -656,7 +641,7 @@ function stripTris(list, lim, joints, tris){
   }
   return tris;
 }
-function polyTris(pts, tris){ try{ const v=pts.map(p=>new THREE.Vector2(p[0],p[1])); const f=THREE.ShapeUtils.triangulateShape(v,[]); for(const [a,b,c] of f) tris.push([pts[a],pts[b],pts[c]]); }catch(e){} return tris; }
+function polyTris(pts, tris, holes){ try{ const hs=holes||[], all=pts.concat(...hs), V2=r=>r.map(p=>new THREE.Vector2(p[0],p[1])); const f=THREE.ShapeUtils.triangulateShape(V2(pts),hs.map(V2)); for(const [a,b,c] of f) tris.push([all[a],all[b],all[c]]); }catch(e){} return tris; }
 function makeLabelSprite(text, color){
   const c=document.createElement('canvas'), g=c.getContext('2d'), fs=46, font=`800 ${fs}px "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", system-ui, sans-serif`;
   g.font=font; const tw=Math.ceil(g.measureText(text).width); c.width=tw+52; c.height=fs+32;
@@ -712,16 +697,16 @@ function makeCar(color){
 const CROWD_MAX=560;
 const crowd={agents:[], lanes:[], laneGrid:null, M:null, sig:{phase:'cars',t:0}, lights:[], tick:0, area:1, areaT:0, near:[]};
 const CROWD_LINES=LINES.concat([
-  'Excuse me, coming through! Some of us have jobs.',
-  'First time in New York? Look up, but keep walking.',
-  'The red steps are the best seat in Times Square, and they’re free.',
-  'My show starts in ten minutes and the subway was a disaster.',
-  'Rain in Midtown means every umbrella is a weapon. Stay alert.'
+  'Wait for the green man, then everyone goes at once. It’s the best part of Shibuya.',
+  'Rush hour is no joke. I’ve been pushed onto three trains this week.',
+  'Excuse me, sumimasen! Everyone’s in such a hurry.',
+  'The clear umbrellas? Everyone has one. Nobody knows whose is whose.',
+  'I’m only here for the department store food hall. Don’t judge me.'
 ]);
 const DARK=['#1d1f24','#23262d','#2b2f3a','#33363d','#1f2a44','#3a3f4a','#4a4d55'];
-const CASUAL=['#e94b55','#3f7fd8','#f0c23b','#34a37a','#ef8fb2','#f08a3c','#8a63d2','#f2f2f0','#d9d4c8','#8a8f99','#6b5a4a','#c9b79c','#e94b55','#3f7fd8','#f0c23b','#ef8fb2','#34a37a','#b7c8d8','#e8c9a8'];
+const CASUAL=['#f2f2f0','#d9d4c8','#8a8f99','#6b5a4a','#c9b79c','#e94b55','#3f7fd8','#f0c23b','#ef8fb2','#34a37a','#b7c8d8','#e8c9a8'];
 const PANTS_T=['#1d1f24','#2b3445','#3a3f4a','#4a5a73','#6d5a46','#d8d1c4','#23262d'];
-const UMB=['#1d1f24','#1d1f24','#2b3a5c','#8a2b35','#e9e3d6','#3e6fc4','#f4c542'];
+const UMB=['#e9eef2','#e9eef2','#e9eef2','#1d1f24','#2b3a5c','#8a2b35'];
 const bagG=new THREE.BoxGeometry(0.32,0.26,0.12), umbG=new THREE.ConeGeometry(0.62,0.3,10,1,true).translate(0,2.15,0), stickG=new THREE.CylinderGeometry(0.015,0.015,0.85,4).translate(0,1.65,0);
 const ZERO=new THREE.Matrix4().makeScale(0,0,0);
 function makeCrowdMeshes(){
@@ -737,7 +722,7 @@ function onRoad(x,y){ if(!roadGrid) return false; for(const s of roadGrid.at(x,y
 function buildLanes(){
   const lim=W.half+30; crowd.laneGrid=new Grid(); crowd.lanes=[];
   for(const r of W.roads){ if(r.kind==='rail') continue; const run=clipRun(r.pts,lim); if(run.length<2) continue;
-    const sw=W.sidewalk||2, offs=r.kind==='road'?[r.w/2+sw*0.5,-(r.w/2+sw*0.5)]:[0], spread=r.kind==='road'?Math.max(0.45,sw*0.28):Math.max(0.3,r.w/3);
+    const offs=r.kind==='road'?[r.w/2+1.0,-(r.w/2+1.0)]:[0], spread=r.kind==='road'?0.45:Math.max(0.3,r.w/3);
     for(const o of offs){ const pts=offsetLine(run,o), pl=polyline(pts); if(pl.len<6) continue; const L={pl,spread};
       crowd.lanes.push(L);
       for(let i=0;i<pts.length-1;i++){ const a=pts[i], b=pts[i+1]; crowd.laneGrid.add({L,a,b,s0:pl.cum[i],len:pl.cum[i+1]-pl.cum[i]}, Math.min(a[0],b[0])-2,Math.min(a[1],b[1])-2,Math.max(a[0],b[0])+2,Math.max(a[1],b[1])+2); } } }
@@ -874,14 +859,13 @@ function nearestZone(x,y){ let bi=0, bd=1e9; W.scramble.zones.forEach((z,i)=>{ c
 const VM={ glass:new THREE.MeshLambertMaterial({color:0x6f8296}), dark:new THREE.MeshLambertMaterial({color:0x1c1c1c}),
   head:new THREE.MeshLambertMaterial({color:0xfff6d8, emissive:0xfff2c0, emissiveIntensity:0}), tail:new THREE.MeshLambertMaterial({color:0xc0302a, emissive:0xff2a1a, emissiveIntensity:0}),
   lamp:new THREE.MeshLambertMaterial({color:0xf4c542, emissive:0xffb020, emissiveIntensity:0}), sign:new THREE.MeshLambertMaterial({color:0x222222, emissive:0xff9a2a, emissiveIntensity:0}),
-  busWin:new THREE.MeshLambertMaterial({color:0x4a5a6a, emissive:0xfff0c8, emissiveIntensity:0}),
-  lbR:new THREE.MeshLambertMaterial({color:0xc8202e, emissive:0xff2020, emissiveIntensity:0}), lbB:new THREE.MeshLambertMaterial({color:0x2040c8, emissive:0x3060ff, emissiveIntensity:0}) };
+  busWin:new THREE.MeshLambertMaterial({color:0x4a5a6a, emissive:0xfff0c8, emissiveIntensity:0}) };
 const VNIGHT=[[VM.head,1.2],[VM.tail,1],[VM.lamp,1.1],[VM.sign,1.3],[VM.busWin,0.7]];
 const vmatCache={}; const cmat=hex=>vmatCache[hex]||(vmatCache[hex]=new THREE.MeshLambertMaterial({color:hex}));
 const vBox=new THREE.BoxGeometry(1,1,1), vWheel=new THREE.CylinderGeometry(0.33,0.33,0.24,12).rotateZ(Math.PI/2), vWheelS=new THREE.CylinderGeometry(0.26,0.26,0.12,10).rotateZ(Math.PI/2);
 function VB(g,mat,w,h,l,x,y,z,shadow){ const m=new THREE.Mesh(vBox,mat); m.scale.set(w,h,l); m.position.set(x,y,z); if(shadow!==false) m.castShadow=true; g.add(m); return m; }
-const VTYPES=[ // a Midtown mix: cabs everywhere
-  {k:'cab',wt:30},{k:'sedan',wt:13},{k:'suv',wt:14},{k:'van',wt:9},{k:'truck',wt:10},{k:'bus',wt:6},{k:'ebike',wt:11},{k:'police',wt:3},{k:'moto',wt:3}];
+const VTYPES=[ // weights lean small, the way Tokyo side streets look
+  {k:'kei',wt:22},{k:'sedan',wt:12},{k:'taxi',wt:16},{k:'van',wt:10},{k:'keitruck',wt:10},{k:'truck',wt:10},{k:'bus',wt:5},{k:'scooter',wt:11},{k:'moto',wt:5}];
 function pickVType(){ let t=Math.random()*VTYPES.reduce((a,b)=>a+b.wt,0); for(const v of VTYPES){ t-=v.wt; if(t<=0) return v.k; } return 'kei'; }
 function rider(g,y,z,lean){
   const r=new THREE.Group(), shirt=cmat(pick(DARK.concat(['#c8333b','#3e6fc4','#f4f2ee']))), pants=cmat(pick(PANTS_T));
@@ -895,19 +879,7 @@ function makeVehicle(k){
   const wheels=(xs,zs,wg,y)=>{ for(const x of xs) for(const z of zs){ const w=new THREE.Mesh(wg||vWheel,VM.dark); w.position.set(x,y||0.33,z); g.add(w); } };
   const lights=(w,zf,zb,y)=>{ for(const x of [-w/2+0.24,w/2-0.24]){ VB(g,VM.head,0.3,0.16,0.05,x,y,zf,false); VB(g,VM.tail,0.3,0.14,0.05,x,y+0.04,zb,false); } };
   const R=Math.random;
-  if(k==='cab'){ const c=cmat('#f4c21a'); len=4.7; wd=1.8; sp=8.5+R()*2;
-    VB(g,c,1.8,0.8,4.7,0,0.7,0); VB(g,VM.glass,1.62,0.62,2.5,0,1.38,-0.15); VB(g,c,1.64,0.08,2.3,0,1.73,-0.15); VB(g,VM.lamp,0.8,0.25,0.25,0,1.92,0.1);
-    VB(g,cmat('#1d1f24'),1.82,0.12,1.6,0,0.82,0.3,false); wheels([-.84,.84],[-1.5,1.5]); lights(1.8,2.36,-2.36,0.75); }
-  else if(k==='suv'){ const c=cmat(pick(['#1d1f24','#c9ced6','#f4f2ee','#2b3445','#5a5f66','#6b2b30'])); len=4.9; wd=1.95; sp=8+R()*2;
-    VB(g,c,1.95,1.0,4.9,0,0.88,0); VB(g,VM.glass,1.85,0.65,3.2,0,1.68,-0.3); VB(g,c,1.87,0.08,3.2,0,2.04,-0.3); wheels([-.9,.9],[-1.55,1.55]); lights(1.95,2.46,-2.46,0.95); }
-  else if(k==='police'){ const c=cmat('#f4f2ee'); len=4.9; wd=1.85; sp=8+R()*2;
-    VB(g,c,1.85,0.75,4.9,0,0.68,0); VB(g,cmat('#1f3f8f'),1.87,0.16,4.92,0,0.72,0,false); VB(g,VM.glass,1.62,0.58,2.4,0,1.3,-0.2); VB(g,c,1.64,0.08,2.2,0,1.63,-0.2);
-    VB(g,VM.lbR,0.6,0.16,0.32,-0.32,1.76,-0.1,false); VB(g,VM.lbB,0.6,0.16,0.32,0.32,1.76,-0.1,false); wheels([-.86,.86],[-1.55,1.55]); lights(1.85,2.46,-2.46,0.75); }
-  else if(k==='ebike'){ len=1.9; wd=0.6; sp=7+R()*3; minRoad=4; side=0.8;
-    VB(g,cmat('#1d1f24'),0.18,0.18,1.3,0,0.55,0); VB(g,cmat('#1d1f24'),0.08,0.8,0.08,0,0.95,0.55); VB(g,cmat('#2a2a2a'),0.5,0.06,0.06,0,1.35,0.55);
-    for(const z of [0.6,-0.6]){ const w=new THREE.Mesh(vWheelS,VM.dark); w.scale.set(1,1.2,1.2); w.position.set(0,0.32,z); g.add(w); }
-    VB(g,VM.head,0.14,0.1,0.05,0,1.1,0.62,false); rider(g,0.75,-0.15,0.25); VB(g,cmat(pick(['#e0462f','#f4c542','#2e8b57','#1d1f24','#3e6fc4'])),0.55,0.5,0.4,0,1.55,-0.5); }
-  else if(k==='kei'){ const c=cmat(pick(['#f4f2ee','#c9ced6','#bfe3d0','#e8d9b8','#f2c6cf','#24262c','#7fa8d8'])); len=3.4; wd=1.48; sp=7+R()*2; minRoad=5;
+  if(k==='kei'){ const c=cmat(pick(['#f4f2ee','#c9ced6','#bfe3d0','#e8d9b8','#f2c6cf','#24262c','#7fa8d8'])); len=3.4; wd=1.48; sp=7+R()*2; minRoad=5;
     VB(g,c,1.48,0.95,3.4,0,0.78,0); VB(g,VM.glass,1.42,0.72,2.3,0,1.6,-0.2); VB(g,c,1.44,0.08,2.3,0,2.0,-0.2); wheels([-.66,.66],[-1.1,1.1]); lights(1.48,1.71,-1.71,0.9); }
   else if(k==='sedan'){ const c=cmat(pick(['#f4f2ee','#c9ced6','#1d1f24','#2b3445','#8a2b35','#6f7f73'])); len=4.6; sp=8+R()*2;
     VB(g,c,1.75,0.7,4.6,0,0.62,0); VB(g,VM.glass,1.55,0.55,2.3,0,1.24,-0.2); VB(g,c,1.57,0.07,2.0,0,1.54,-0.2); wheels([-.82,.82],[-1.45,1.45]); lights(1.75,2.31,-2.31,0.7); }
@@ -925,7 +897,7 @@ function makeVehicle(k){
     VB(g,cmat('#f2f2ee'),1.95,2.15,4.4,0,1.72,-0.75); VB(g,cmat(pick(['#2e8b57','#3e6fc4','#c8333b','#f4c542'])),1.97,0.28,4.42,0,1.1,-0.75);
     wheels([-.85,.85],[2.2,-1.6,-2.4]); for(const x of [-.6,.6]){ VB(g,VM.head,0.3,0.16,0.05,x,0.82,3.06,false); VB(g,VM.tail,0.3,0.14,0.05,x,0.82,-2.96,false); } }
   else if(k==='bus'){ len=10.5; wd=2.45; sp=6+R()*1; minRoad=12;
-    VB(g,cmat('#f2f2ee'),2.45,2.55,10.5,0,1.62,0); VB(g,cmat('#2a5db0'),2.47,0.55,10.52,0,0.82,0); VB(g,VM.busWin,2.47,0.9,9.3,0,2.08,-0.35);
+    VB(g,cmat('#f2f2ee'),2.45,2.55,10.5,0,1.62,0); VB(g,cmat('#3aa055'),2.47,0.55,10.52,0,0.82,0); VB(g,VM.busWin,2.47,0.9,9.3,0,2.08,-0.35);
     VB(g,VM.glass,2.3,1.25,0.06,0,2.0,5.26); VB(g,VM.sign,1.8,0.3,0.06,0,2.72,5.27,false); VB(g,cmat('#d6dae2'),1.8,0.3,3,0,3.04,-1);
     wheels([-1.1,1.1],[3.3,-3.0]); lights(2.45,5.26,-5.26,0.75); }
   else if(k==='scooter'){ const c=cmat(pick(['#f4f2ee','#c8333b','#3e6fc4','#2b2d3a','#f4c542'])); len=1.9; wd=0.6; sp=6.5+R()*2.5; minRoad=4; side=0.7;
@@ -938,17 +910,13 @@ function makeVehicle(k){
     VB(g,VM.head,0.18,0.14,0.05,0,1.0,0.68,false); VB(g,VM.tail,0.14,0.08,0.05,0,0.88,-0.66,false); rider(g,0.98,-0.25,0.35); }
   return {m:g, k, len, wd, sp, minRoad, side};
 }
-function laneFor(c,pl){ const DRIVE=-1; // keep right
-  if(pl.ow){ if(c.side) return DRIVE*(pl.w/2-1.0); const n=Math.max(1,Math.floor((pl.w-1.2)/3.3)); if(n===1) return 0; const k=Math.floor(Math.random()*n); return -(pl.w/2-1.8)+k*(pl.w-3.6)/(n-1); }
-  const base=Math.min(1.8,pl.w/4); return DRIVE*(base+(c.side?Math.min(c.side,pl.w/2-base-0.5):0)); }
-function flipCar(c){ if(c.pl.ow){ if(!placeCar(c,false)) c.s=c.pl.ow>0?1:c.pl.len-1; c.v=0; } else c.dir*=-1; }
 function placeCar(c, initial){
   const near=carRoads.filter(pl=>pl.w>=c.minRoad).map(pl=>({pl, n:pl.nearest(P.x,P.y)})).filter(o=>o.n.d<140);
   if(!near.length) return false;
   for(let t=0;t<10;t++){
-    const o=pick(near), dir=o.pl.ow||(Math.random()<.5?1:-1);
+    const o=pick(near), dir=Math.random()<.5?1:-1;
     const off=initial?(Math.random()*2-1)*90:(Math.random()<.5?-1:1)*(60+Math.random()*60);
-    const s=clamp(o.n.s+off,1,o.pl.len-1), lane=laneFor(c,o.pl);
+    const s=clamp(o.n.s+off,1,o.pl.len-1), lane=Math.min(1.8,o.pl.w/4)+(c.side?Math.min(c.side,o.pl.w/2-Math.min(1.8,o.pl.w/4)-0.5):0);
     const q=o.pl.at(s), hx=q.dx*dir, hy=q.dy*dir, x=q.x-hy*lane, y=q.y+hx*lane;
     if(cars.some(k=>k!==c && k.x!=null && Math.hypot(k.x-x,k.y-y)<(k.len+c.len)/2+6)) continue;
     c.pl=o.pl; c.dir=dir; c.s=s; c.lane=lane; c.x=x; c.y=y; c.hx=hx; c.hy=hy; c.v=c.sp*0.5; c.wait=0; c.creep=0; return true;
@@ -961,14 +929,14 @@ function continueRoad(c){
   const e=c.pl.at(c.s), opts=[], key=Math.round(e.x/5)*100000+Math.round(e.y/5), res=JUNC.get(key);
   if(res && res.car!==c && res.until>vtime) return 'busy';
   for(const pl of carRoads){ if(pl===c.pl || pl.w<c.minRoad) continue; const n=pl.nearest(e.x,e.y); if(n.d>5) continue; const q=pl.at(n.s);
-    for(const dir of (pl.ow?[pl.ow]:[1,-1])){ const dot=q.dx*dir*c.hx+q.dy*dir*c.hy, rem=dir>0?pl.len-n.s:n.s; if(dot>-0.2 && rem>15) opts.push({pl,s:n.s,dir,dot}); } }
+    for(const dir of [1,-1]){ const dot=q.dx*dir*c.hx+q.dy*dir*c.hy, rem=dir>0?pl.len-n.s:n.s; if(dot>-0.2 && rem>15) opts.push({pl,s:n.s,dir,dot}); } }
   if(!opts.length) return false;
   const straight=opts.filter(o=>o.dot>0.7), o=(straight.length && Math.random()<0.55)?pick(straight):pick(opts);
   JUNC.set(key,{car:c, until:vtime+(c.len+12)/Math.max(3,c.sp)});
-  c.pl=o.pl; c.s=o.s; c.dir=o.dir; c.lane=laneFor(c,o.pl); return true;
+  c.pl=o.pl; c.s=o.s; c.dir=o.dir; c.lane=Math.min(1.8,o.pl.w/4)+(c.side?Math.min(c.side,o.pl.w/2-Math.min(1.8,o.pl.w/4)-0.5):0); return true;
 }
 function updateVehicles(dt){
-  vtime+=dt; const fl=Math.sin(vtime*12)>0; VM.lbR.emissiveIntensity=fl?1.6:0.1; VM.lbB.emissiveIntensity=fl?0.1:1.6;
+  vtime+=dt;
   for(const c of cars){ let q=c.pl.at(c.s); if(W.half>80 && Math.hypot(q.x-P.x,q.y-P.y)>230){ placeCar(c,false); q=c.pl.at(c.s); }
     c.hx=q.dx*c.dir; c.hy=q.dy*c.dir; c.x=q.x-c.hy*c.lane; c.y=q.y+c.hx*c.lane; }
   const people=[P].concat(crowd.near);
@@ -976,8 +944,6 @@ function updateVehicles(dt){
     const c=cars[i]; let stop=false, slow=1; const prevBlk=c.blk; c.blk=-1;
     if(W.scramble){ const ph=crowd.sig.phase, ew=Math.abs(c.hx)>Math.abs(c.hy), red=ph==='walk' || (ph==='cars' && (crowd.sig.t<17 ? !ew : ew));
       if(red){ const dx=W.scramble.x-c.x, dy=W.scramble.y-c.y, dd=Math.hypot(dx,dy); if(dd<27 && dd>10 && (dx*c.hx+dy*c.hy)/dd>0.4) stop=true; } }
-    if(!stop && sigGrid){ const ss=sigState(); for(const sg of sigGrid.at(c.x,c.y)){ const dx=sg.x-c.x, dy=sg.y-c.y, ahead=dx*c.hx+dy*c.hy, along=Math.abs(c.hx*sg.ux+c.hy*sg.uy)>0.7, half=(along?sg.ws:sg.wa)/2;
-        if(ahead<half+1+c.len/2 || ahead>half+10+c.len/2) continue; if(Math.abs(-dx*c.hy+dy*c.hx)>(along?sg.wa:sg.ws)/2+1) continue; if((along?ss.ave:ss.str)!=='g'){ stop=true; break; } } }
     if(!stop && Math.hypot(c.x-P.x,c.y-P.y)<70) for(const o of people){ const ox=o.x-c.x, oy=o.y-c.y, ahead=ox*c.hx+oy*c.hy, side=Math.abs(-ox*c.hy+oy*c.hx); if(ahead>0 && ahead<c.len/2+4.5 && side<c.wd/2+1.0){ stop=true; break; } }
     if(c.creep>0) c.creep-=dt;
     else if(!stop) for(let j=0;j<cars.length;j++){ if(j===i) continue; const o=cars[j], ox=o.x-c.x, oy=o.y-c.y; if(Math.abs(ox)>25 || Math.abs(oy)>25) continue;
@@ -985,110 +951,21 @@ function updateVehicles(dt){
       const gap=ahead-(c.len+o.len)/2; if(gap>10) continue;
       if(o.blk===i && i<j) continue; // two vehicles nose to nose at a junction: one goes first
       if(gap<2.2){ stop=true; c.blk=j; break; } slow=Math.min(slow, clamp((gap-2.2)/7.8,0,1)); }
-    c.wait = (stop && c.blk>=0) ? c.wait+dt : 0; if(c.wait>7){ c.wait=0; if(!(Math.hypot(c.x-P.x,c.y-P.y)>60 && placeCar(c,false))){ flipCar(c); c.v=0; } }
+    c.wait = (stop && c.blk>=0) ? c.wait+dt : 0; if(c.wait>7){ c.wait=0; if(!(Math.hypot(c.x-P.x,c.y-P.y)>60 && placeCar(c,false))){ c.dir*=-1; c.v=0; } }
     const tv=stop?0:c.sp*Math.max(0.12,slow);
     c.v=lerp(c.v,tv,Math.min(1,dt*(tv<c.v?5:1.2))); c.s+=c.v*c.dir*dt;
     if(c.s>c.pl.len-1 || c.s<1){ c.s=clamp(c.s,1,c.pl.len-1); const far=Math.hypot(c.x-P.x,c.y-P.y)>70, r=continueRoad(c);
-      if(r==='busy'){ c.v=0; c.hold=(c.hold||0)+dt; if(c.hold>6){ c.hold=0; if(!(far && placeCar(c,false))) flipCar(c); } }
-      else if(!r){ if(!(far && placeCar(c,false))) flipCar(c); } else c.hold=0; }
+      if(r==='busy'){ c.v=0; c.hold=(c.hold||0)+dt; if(c.hold>6){ c.hold=0; if(!(far && placeCar(c,false))) c.dir*=-1; } }
+      else if(!r){ if(!(far && placeCar(c,false))) c.dir*=-1; } else c.hold=0; }
     const q=c.pl.at(c.s), hx=q.dx*c.dir, hy=q.dy*c.dir; c.m.position.set(q.x-hy*c.lane,0,-(q.y+hx*c.lane)); c.m.rotation.y=headingRot(hx,hy);
   }
-}
-
-/* ---------------- New York details: billboards, ticker, red steps, steam, hydrants, signals ---------------- */
-const BILLN=8, BILL={tex:[],ctx:[],acc:[],tickAcc:[],t:0,meshes:[]};
-(function(){ for(let i=0;i<BILLN;i++){ const c=cnv(128,96); BILL.ctx.push(c.getContext('2d')); const t=new THREE.CanvasTexture(c); t.minFilter=THREE.LinearFilter; BILL.tex.push(t); }
-  const tc=cnv(1024,32), g=tc.getContext('2d'); g.fillStyle='#0b0c12'; g.fillRect(0,0,1024,32); g.fillStyle='#ffb020'; g.font='bold 22px ui-monospace, Menlo, monospace'; g.textBaseline='middle';
-  g.fillText('WELCOME TO TIMES SQUARE  •  72°F AND CLEAR  •  NEW SHOWS OPENING TONIGHT  •  MARKETS UP  •  ', 8, 17);
-  BILL.tickTex=texOf(tc); BILL.tickTex.minFilter=THREE.LinearFilter; })();
-function drawBill(i,t){
-  const g=BILL.ctx[i], W2=128, H2=96; g.save(); g.textAlign='center'; g.textBaseline='middle';
-  if(i===0){ g.fillStyle=`hsl(${(t*40)%360},80%,38%)`; g.fillRect(0,0,W2,H2); g.fillStyle='#fff'; g.font='bold 28px sans-serif'; g.fillText('NEW',64,32); g.fillText('SHOW',64,66); }
-  else if(i===1){ const C=['#ff4f7e','#ffd23f','#3fa7ff','#22c38e']; for(let k=-8;k<16;k++){ g.fillStyle=C[(k+400)%4]; g.beginPath(); const o=((t*30)%24)+k*24; g.moveTo(o,0); g.lineTo(o+12,0); g.lineTo(o-36,H2); g.lineTo(o-48,H2); g.fill(); } g.fillStyle='rgba(0,0,0,.55)'; g.fillRect(14,30,100,36); g.fillStyle='#fff'; g.font='bold 22px sans-serif'; g.fillText('PLAY',64,49); }
-  else if(i===2){ g.fillStyle='#c8102e'; g.fillRect(0,0,W2,H2); const r=26+Math.sin(t*3)*6; g.fillStyle='#fff'; g.beginPath(); g.arc(64,44,r,0,7); g.fill(); g.fillStyle='#c8102e'; g.font='bold 20px sans-serif'; g.fillText('FRESH',64,45); g.fillStyle='#fff'; g.font='bold 12px sans-serif'; g.fillText('ICE COLD',64,84); }
-  else if(i===3){ g.fillStyle='#10143a'; g.fillRect(0,0,W2,H2); for(let k=0;k<30;k++){ const a=0.3+0.7*Math.abs(Math.sin(t*2+k)); g.fillStyle=`rgba(255,255,220,${a})`; g.fillRect((k*37)%W2,(k*53)%60,2,2); } g.fillStyle='#ffd23f'; g.font='bold 20px sans-serif'; g.fillText('TONIGHT',64,74); }
-  else if(i===4){ g.fillStyle='#ffd23f'; g.fillRect(0,0,W2,H2); const y=48+Math.abs(Math.sin(t*4))*-14; g.fillStyle='#1a1c3d'; g.font='bold 30px sans-serif'; g.fillText('SALE',64,y); g.font='bold 18px sans-serif'; g.fillText('50% OFF',64,82); }
-  else if(i===5){ const gr=g.createLinearGradient(0,0,0,H2); const h=(t*10)%60; gr.addColorStop(0,`hsl(${280+h},70%,30%)`); gr.addColorStop(1,`hsl(${20+h},90%,55%)`); g.fillStyle=gr; g.fillRect(0,0,W2,H2); g.fillStyle='#0e0f1c'; for(let k=0;k<12;k++){ const bw=10, bh=20+((k*37)%45); g.fillRect(k*11,H2-bh,bw,bh); } g.fillStyle='#fff'; g.font='bold 22px sans-serif'; g.fillText('NYC',64,26); }
-  else if(i===6){ g.fillStyle='#e84a8a'; g.fillRect(0,0,W2,H2); g.fillStyle='#fff'; g.beginPath(); g.arc(64,40,22,0,7); g.fill(); g.fillStyle='#1a1c3d'; g.beginPath(); g.arc(56,35,3,0,7); g.arc(72,35,3,0,7); g.fill(); g.lineWidth=3; g.strokeStyle='#1a1c3d'; g.beginPath(); g.arc(64,42,10,0.2,Math.PI-0.2); g.stroke(); g.fillStyle='#fff'; g.font='bold 16px sans-serif'; g.fillText('SMILE!',64,80); }
-  else { g.fillStyle='#14161f'; g.fillRect(0,0,W2,H2); g.fillStyle='#e0262f'; g.fillRect(8,8,40,18); g.fillStyle='#fff'; g.font='bold 13px sans-serif'; g.fillText('LIVE',28,18); for(let k=0;k<6;k++){ const h=10+Math.abs(Math.sin(t*3+k))*40; g.fillStyle=k%2?'#3fa7ff':'#22c38e'; g.fillRect(16+k*17,H2-10-h,12,h); } }
-  g.restore(); BILL.tex[i].needsUpdate=true;
-}
-function buildBillboards(b,idx){
-  const p=b.pts, n=p.length, edges=[];
-  if(b.billboardAll){ for(let i=0;i<n;i++){ const a=p[i], c=p[(i+1)%n], len=Math.hypot(c[0]-a[0],c[1]-a[1]); if(len>4) edges.push({a,c,len,dx:(c[0]-a[0])/len,dy:(c[1]-a[1])/len}); } }
-  else { const fe=frontEdge(b); if(fe) edges.push(fe); }
-  edges.forEach((e,k)=>{
-    const ox=e.dy, oy=-e.dx, want=[ox,0,-oy], at=(s,o,z)=>T3(e.a[0]+e.dx*s+ox*o, e.a[1]+e.dy*s+oy*o, z);
-    const z0=b.billboardAll?18:6+hash(idx+k)*3, zTop=Math.min(b.h-3, z0+Math.min(e.len*0.85,b.billboardAll?70:28)); if(zTop<z0+4) return;
-    const panels=e.len>20?2:1, gap=0.8, pw=(e.len-1.2-(panels-1)*gap)/panels;
-    for(let q=0;q<panels;q++){ const s0=0.6+q*(pw+gap), s1=s0+pw, ti=Math.floor(hash(idx*7.3+k*3+q)*BILLN);
-      quad(BILL.acc,ti,at(s0,0.25,z0),at(s1,0.25,z0),at(s1,0.25,zTop),at(s0,0.25,zTop),[0,0],[1,0],[1,1],[0,1],WHITE,want); }
-  });
-  if(b.ticker){ let u=0; for(let i=0;i<n;i++){ const a=p[i], c=p[(i+1)%n], len=Math.hypot(c[0]-a[0],c[1]-a[1]); if(len<0.5) continue; const dx=(c[0]-a[0])/len, dy=(c[1]-a[1])/len, ox=dy*0.35, oy=-dx*0.35;
-      quad(BILL.tickAcc,0,T3(a[0]+ox,a[1]+oy,12),T3(c[0]+ox,c[1]+oy,12),T3(c[0]+ox,c[1]+oy,13.8),T3(a[0]+ox,a[1]+oy,13.8),[u,0],[u+len/40,0],[u+len/40,1],[u,1],WHITE,[dy,0,dx]); u+=len/40; } }
-}
-function meshFromAcc(B,mat){ const cnt=B.p.length/3, g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(B.p,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(B.n,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(B.u,2)); g.computeBoundingSphere(); return new THREE.Mesh(g,mat); }
-function finishBillboards(){
-  BILL.meshes=[];
-  BILL.acc.forEach((B,i)=>{ if(!B) return; const m=meshFromAcc(B,new THREE.MeshBasicMaterial({map:BILL.tex[i], side:THREE.DoubleSide})); worldGroup.add(m); BILL.meshes.push(m); drawBill(i,0); });
-  if(BILL.tickAcc[0]){ BILL.tickTex.wrapS=THREE.RepeatWrapping; worldGroup.add(meshFromAcc(BILL.tickAcc[0],new THREE.MeshBasicMaterial({map:BILL.tickTex, side:THREE.DoubleSide}))); }
-}
-const SIGM={ ave:{r:new THREE.MeshBasicMaterial({color:0x3a1512}),y:new THREE.MeshBasicMaterial({color:0x3a3012}),g:new THREE.MeshBasicMaterial({color:0x123a22})},
-             str:{r:new THREE.MeshBasicMaterial({color:0x3a1512}),y:new THREE.MeshBasicMaterial({color:0x3a3012}),g:new THREE.MeshBasicMaterial({color:0x123a22})} };
-const LIT={r:0xff3b30,y:0xffc21a,g:0x2fe07a}, DIM={r:0x3a1512,y:0x3a3012,g:0x123a22};
-function sigState(){ const c=vtime%52; return {ave: c<22?'g':(c<25?'y':'r'), str:(c>=26&&c<48)?'g':((c>=48&&c<51)?'y':'r')}; }
-let sigGrid=null, STEAM=[], tktsMat=null;
-function buildStreetThing(p){
-  const g=new THREE.Group(), ang=headingRot(GSX,GCY);
-  if(p.kind==='subway'){ const rail=cmat('#2e6b3a'); VB(g,cmat('#1a1c22'),2.4,0.06,3.4,0,0.03,0,false); VB(g,rail,0.07,1.0,3.4,-1.2,0.5,0); VB(g,rail,0.07,1.0,3.4,1.2,0.5,0); VB(g,rail,2.4,1.0,0.07,0,0.5,-1.7);
-    const glow=new THREE.MeshBasicMaterial({color:0x5bd18a}); for(const x of [-1.2,1.2]){ VB(g,rail,0.08,1.7,0.08,x,0.85,1.6); const s=new THREE.Mesh(new THREE.SphereGeometry(0.2,10,8),glow); s.position.set(x,1.85,1.6); g.add(s); } addSolid(p.x,p.y,1.3); }
-  else if(p.kind==='cart'){ const steel=cmat('#c9ced6'); VB(g,steel,1.0,1.0,1.7,0,0.95,0); VB(g,cmat('#1d1f24'),0.08,0.5,0.08,0,0.25,0.7); for(const z of [-0.6,0.6]){ const w=new THREE.Mesh(vWheelS,VM.dark); w.position.set(0.55,0.28,z); g.add(w); }
-    VB(g,steel,0.05,1.2,0.05,0,2.0,0); const um=new THREE.Mesh(new THREE.ConeGeometry(1.25,0.55,10),cmat(pick(['#f4c542','#3e6fc4','#e0462f','#2e8b57']))); um.position.y=2.7; um.castShadow=true; g.add(um);
-    labelables.push({x:p.x,y:p.y,z:3.6,text:p.name,color:KIND.cart.color,sprite:null,small:true}); addSolid(p.x,p.y,0.9); }
-  else { VB(g,cmat('#2d4fa8'),2.6,2.8,2.6,0,1.4,0); VB(g,cmat('#f2f2ee'),2.62,0.35,2.62,0,2.2,0); VB(g,new THREE.MeshBasicMaterial({color:0x6aa4ff}),0.6,0.25,0.6,0,2.95,0,false);
-    labelables.push({x:p.x,y:p.y,z:4.2,text:p.name,color:KIND.koban.color,sprite:null,small:true}); addSolid(p.x,p.y,1.5); }
-  g.position.copy(V(p.x,p.y,0)); g.rotation.y=ang; worldGroup.add(g);
-}
-function buildNYC(){
-  sigGrid=null; STEAM=[];
-  if(W.tkts){ const t=W.tkts, g=new THREE.Group(); if(!tktsMat){ tktsMat=new THREE.MeshLambertMaterial({color:0xc8202e, emissive:0xff2a3a, emissiveIntensity:0.35}); }
-    nightMats.push({mat:tktsMat,max:0.9});
-    for(let k=0;k<9;k++){ const h=(k+1)*0.42, m=new THREE.Mesh(vBox,tktsMat); m.scale.set(11,h,1.0); m.position.set(0,h/2,-(k*1.0+0.5)); m.castShadow=true; m.receiveShadow=true; g.add(m); }
-    g.position.copy(V(t.x,t.y,0)); g.rotation.y=headingRot(t.fx,t.fy); worldGroup.add(g);
-    for(let k=0;k<9;k+=2) for(const s of [-3.5,0,3.5]){ const x=t.x-t.fx*(k+0.5)+t.fy*s, y=t.y-t.fy*(k+0.5)-t.fx*s; addSolid(x,y,1.0); } }
-  const puffM=new THREE.MeshLambertMaterial({color:0xf2f2f2, transparent:true, opacity:0.32, depthWrite:false}), puffG=new THREE.SphereGeometry(0.5,8,6);
-  for(const [x,y] of (W.steam||[])){ const g=new THREE.Group(); const o=cmat('#f08a3c'), wt=cmat('#f4f2ee');
-    const c=new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.42,1.7,10),o); c.position.y=0.85; c.castShadow=true; g.add(c); for(const z of [0.55,1.15]){ const b=new THREE.Mesh(new THREE.CylinderGeometry(0.36,0.4,0.18,10),wt); b.position.y=z; g.add(b); }
-    const puffs=[]; for(let k=0;k<7;k++){ const m=new THREE.Mesh(puffG,puffM); g.add(m); puffs.push({m,ph:k/7}); }
-    g.position.copy(V(x,y,0)); worldGroup.add(g); STEAM.push(puffs); addSolid(x,y,0.5); }
-  const hyd=(W.hydrants||[]).filter(([x,y])=>!blocked(x,y,0.2));
-  instanced(new THREE.CylinderGeometry(0.15,0.19,0.7,8), cmat('#c8202e'), hyd, (o,p)=>o.position.copy(V(p[0],p[1],0.35)));
-  instanced(new THREE.SphereGeometry(0.17,8,6), cmat('#c8202e'), hyd, (o,p)=>o.position.copy(V(p[0],p[1],0.72)));
-  for(const [x,y] of hyd) addSolid(x,y,0.22);
-  if(W.signals && W.signals.length){
-    sigGrid=new Grid(); for(const s of W.signals) sigGrid.add(s,s.x-24,s.y-24,s.x+24,s.y+24);
-    const poles=[], heads=[], bul={ave:{r:[],y:[],g:[]},str:{r:[],y:[],g:[]}};
-    for(const s of W.signals){ const ex=s.uy, ey=-s.ux, px=s.x+ex*(s.wa/2+1.1)+s.ux*(s.ws/2+1.1), py=s.y+ey*(s.wa/2+1.1)+s.uy*(s.ws/2+1.1);
-      if(blocked(px,py,0.1)) continue; poles.push([px,py]); addSolid(px,py,0.15);
-      const hA=[px-ex*0.45,py-ey*0.45], hS=[px-s.ux*0.45,py-s.uy*0.45]; heads.push(hA,hS);
-      for(const [axis,hp] of [['ave',hA],['str',hS]]) for(const [col,dz] of [['r',0.34],['y',0],['g',-0.34]]) bul[axis][col].push([hp[0],hp[1],5.2+dz]); }
-    instanced(new THREE.CylinderGeometry(0.08,0.1,5.4,6), cmat('#2f4a3a'), poles, (o,p)=>o.position.copy(V(p[0],p[1],2.7)));
-    const hd=instanced(new THREE.BoxGeometry(0.42,1.15,0.42), cmat('#1d1f24'), heads, (o,p)=>o.position.copy(V(p[0],p[1],5.2))); if(hd) hd.castShadow=false;
-    const sg=new THREE.SphereGeometry(0.15,8,6);
-    for(const axis of ['ave','str']) for(const col of ['r','y','g']){ const im=instanced(sg, SIGM[axis][col], bul[axis][col], (o,p)=>o.position.copy(V(p[0],p[1],p[2]))); if(im) im.castShadow=false; }
-  }
-}
-function animNYC(dt){
-  BILL.t+=dt; if(BILL.meshes.length && (BILL.t*4|0)!==((BILL.t-dt)*4|0)){ for(let i=0;i<BILLN;i++) if(BILL.acc[i]) drawBill(i,BILL.t); }
-  BILL.tickTex.offset.x=(BILL.tickTex.offset.x+dt*0.05)%1;
-  for(const puffs of STEAM) for(const p of puffs){ p.ph=(p.ph+dt*0.22)%1; const s=0.5+p.ph*2.2; p.m.position.set(Math.sin(p.ph*9)*0.3*p.ph,1.9+p.ph*5.5,Math.cos(p.ph*7)*0.3*p.ph); p.m.scale.setScalar(s*(1-p.ph*0.35)); }
-  if(sigGrid){ const ss=sigState(); for(const axis of ['ave','str']) for(const col of ['r','y','g']) SIGM[axis][col].color.setHex(ss[axis]===col?LIT[col]:DIM[col]); }
 }
 
 /* ---------------- live map: stream OpenStreetMap tiles around you as you move ----------------
    Works when the game is hosted on a normal website (Vercel, Netlify, GitHub Pages). */
 let CURTILE=0;
-const STREAM={on:false, ready:false, lat0:0, lon0:0, kx:1, ky:110540, latStep:0.0036, lonStep:0.0036, tiles:new Map(), busy:0, worker:null, workerFailed:false, reqs:new Map(), reqId:0,
+const MVT_PARENTS=new Map();
+const STREAM={on:false, rebasing:false, homeLL:null, ready:false, lat0:0, lon0:0, kx:1, ky:110540, latStep:0.0036, lonStep:0.0036, tiles:new Map(), busy:0, worker:null, workerFailed:false, reqs:new Map(), reqId:0,
   t:0, acc:0, vx:0, vy:0, lx:0, ly:0, home:null, place:'', tileN:0, errors:0, netFail:0, lastErr:'', mmT:0, mm:null, db:null,
   eps:['https://overpass-api.de/api/interpreter','https://overpass.private.coffee/api/interpreter','https://overpass.kumi.systems/api/interpreter']};
 Grid.prototype.dropTile=function(id,r){ const m=40, a=Math.floor((r[0]-m)/CELL), b=Math.floor((r[2]+m)/CELL), c=Math.floor((r[1]-m)/CELL), d=Math.floor((r[3]+m)/CELL);
@@ -1142,6 +1019,8 @@ function parseTileData(els, rect){
     if(e.type==='way' && e.geometry){ const pts=e.geometry.filter(Boolean).map(g=>proj(g.lat,g.lon)); if(pts.length>=2) way(pts,e.tags||{}); }
     else if(e.type==='relation' && e.tags && e.members){ for(const m of e.members){ if(m.geometry){ const pts=m.geometry.filter(Boolean).map(g=>proj(g.lat,g.lon)); if(pts.length>3 && closed(pts)) way(pts,e.tags); } } }
     else if(e.type==='node' && e.tags){ const [x,y]=proj(e.lat,e.lon); node(x,y,e.tags); }
+    else if(e.type==='area' && e.rings && e.rings.length){ const rings=e.rings.map(r=>r.map(g=>proj(g.lat,g.lon))); const ext=clipPoly(rings[0],crect); if(!ext) continue;
+      const holes=[]; for(const h of rings.slice(1)){ const c=clipPoly(h,crect); if(c) holes.push(c); } out.areas.push({kind:e.kind, pts:ext, holes}); }
   }
   const g=new Grid(); for(const b of out.buildings){ let a=1e9,c=-1e9,d=1e9,f=-1e9; for(const p of b.pts){ a=Math.min(a,p[0]); c=Math.max(c,p[0]); d=Math.min(d,p[1]); f=Math.max(f,p[1]); } g.add(b,a-4,d-4,c+4,f+4); }
   for(const p of out.pois.filter(p=>p.attach)){ let best=null, bd=4; for(const b of g.at(p.x,p.y)){ const d=pip(p.x,p.y,b.pts)?0:polyDist(p.x,p.y,b.pts); if(d<bd){ bd=d; best=b; } }
@@ -1178,15 +1057,19 @@ async function cacheGet(k){ const db=await idb(); if(!db) return null; return ne
 async function cachePut(k,d){ const db=await idb(); if(!db) return; try{ db.transaction('t','readwrite').objectStore('t').put({t:Date.now(),d},k); }catch(e){} }
 function tileQuery(t){ const bb=`${t.la0.toFixed(6)},${t.lo0.toFixed(6)},${t.la1.toFixed(6)},${t.lo1.toFixed(6)}`;
   return `[out:json][timeout:60];(way(${bb});node[~"^(amenity|shop|tourism|natural|historic|entrance)$"~"."](${bb});relation["building"](${bb});relation["building:part"](${bb});relation["type"="multipolygon"]["leisure"](${bb});relation["type"="multipolygon"]["natural"="water"](${bb}););out geom;`; }
-function newTile(ix,iy){ const la0=iy*STREAM.latStep, lo0=ix*STREAM.lonStep, la1=la0+STREAM.latStep, lo1=lo0+STREAM.lonStep, a=toLocal(la0,lo0), b=toLocal(la1,lo1);
-  return {ix,iy,key:`${STREAM.latStep}:${STREAM.lonStep}:${iy}:${ix}`,la0,lo0,la1,lo1,rect:[a[0],a[1],b[0],b[1]],id:++STREAM.tileN,state:'new',pr:9,needed:true}; }
+function newTile(ix,iy){ // a zoom-16 cell: a quarter of a quarter of a vector tile, about 400–500 m across
+  const la1=y2lat(iy,16), la0=y2lat(iy+1,16), lo0=x2lon(ix,16), lo1=x2lon(ix+1,16), a=toLocal(la0,lo0), b=toLocal(la1,lo1);
+  return {ix,iy,px:ix>>2,py:iy>>2,key:`z16:${ix}:${iy}`,la0,lo0,la1,lo1,rect:[a[0],a[1],b[0],b[1]],id:++STREAM.tileN,state:'new',pr:9,needed:true}; }
 async function loadTile(t){
   t.state='loading'; STREAM.busy++;
-  let els=await cacheGet(t.key);
-  if(!els){ const body='data='+encodeURIComponent(tileQuery(t)), w=streamWorker();
-    const res=await new Promise(done=>{ if(w){ const id=++STREAM.reqId; STREAM.reqs.set(id,done); w.postMessage({id,eps:STREAM.eps,body}); } else mainFetch(body).then(done); });
-    if(res.ok){ els=res.elements; STREAM.netFail=0; if(res.ep && STREAM.eps[0]!==res.ep){ STREAM.eps=[res.ep].concat(STREAM.eps.filter(e=>e!==res.ep)); } cachePut(t.key,els); }
-    else { STREAM.busy--; t.state='error'; t.retry=STREAM.t+(res.allNet?6:20); STREAM.errors++; STREAM.lastErr=res.error; if(res.allNet) STREAM.netFail++; streamTrouble(); return; } }
+  let els=null; const r=await mvtParent(t.px,t.py);
+  if(r.ok){ els=r.cells[t.ix+'_'+t.iy]||[]; STREAM.netFail=0; }
+  else { // backup route: ask Overpass for just this cell
+    els=await cacheGet(t.key);
+    if(!els){ const body='data='+encodeURIComponent(tileQuery(t)), w=streamWorker();
+      const res=await new Promise(done=>{ if(w){ const id=++STREAM.reqId; STREAM.reqs.set(id,done); w.postMessage({id,eps:STREAM.eps,body}); } else mainFetch(body).then(done); });
+      if(res.ok){ els=res.elements; STREAM.netFail=0; cachePut(t.key,els); }
+      else { STREAM.busy--; t.state='error'; t.retry=STREAM.t+(res.allNet?6:20); STREAM.errors++; STREAM.lastErr=res.error; if(res.allNet) STREAM.netFail++; streamTrouble(); return; } } }
   STREAM.busy--; if(!STREAM.on || t.dead) return; t.data=els; t.state='parsed';
 }
 /* --- adding and removing tiles from the world --- */
@@ -1196,7 +1079,7 @@ const spotMat={ring:new THREE.MeshBasicMaterial({color:0xf2457a, transparent:tru
 function makeSpot(s,group){ const g=new THREE.Group(), ring=new THREE.Mesh(spotGeo.ring,spotMat.ring); ring.position.y=0.15; g.add(ring);
   const cam=new THREE.Group(); cam.add(new THREE.Mesh(spotGeo.cam,spotMat.cam)); const lens=new THREE.Mesh(spotGeo.lens,spotMat.lens); lens.position.z=0.17; cam.add(lens); cam.position.y=1.9; g.add(cam);
   g.position.copy(V(s.x,s.y,0)); group.add(g); s.g=g; s.cam=cam; g.visible=!state.album[s.key]; spots.push(s); }
-function tileCoins(t){ const r=t.rect; for(let i=0,n=0;i<40 && n<5;i++){ const x=lerp(r[0],r[2],Math.random()), y=lerp(r[1],r[3],Math.random()); if(blocked(x,y,0.6)) continue; const m=new THREE.Mesh(coinG,coinM); m.position.copy(V(x,y,0.7)); t.group.add(m); coins.push({m,x,y,tile:t.id}); n++; } }
+function tileCoins(t){ const r=t.rect; for(let i=0,n=0;i<40 && n<5;i++){ const x=lerp(r[0],r[2],Math.random()), y=lerp(r[1],r[3],Math.random()); if(blocked(x,y,0.6) || inWater(x,y)) continue; const m=new THREE.Mesh(coinG,coinM); m.position.copy(V(x,y,0.7)); t.group.add(m); coins.push({m,x,y,tile:t.id}); n++; } }
 function tileSpots(t,D){
   const [la,lo]=toLatLon((t.rect[0]+t.rect[2])/2,(t.rect[1]+t.rect[3])/2), tag=`${la.toFixed(3)},${lo.toFixed(3)}`, cand=[];
   for(const p of D.pois) if(p.kind==='statue') cand.push({name:p.name,x:p.x,y:p.y+1.5});
@@ -1245,10 +1128,11 @@ function streamTrouble(){
 function streamTick(dt){
   if(!STREAM.on) return; STREAM.t+=dt;
   const vx=(P.x-STREAM.lx)/Math.max(dt,1e-3), vy=(P.y-STREAM.ly)/Math.max(dt,1e-3); STREAM.lx=P.x; STREAM.ly=P.y;
-  STREAM.vx=lerp(STREAM.vx,clamp(vx,-15,15),0.05); STREAM.vy=lerp(STREAM.vy,clamp(vy,-15,15),0.05);
+  STREAM.vx=lerp(STREAM.vx,clamp(vx,-45,45),0.05); STREAM.vy=lerp(STREAM.vy,clamp(vy,-45,45),0.05);
   ground.position.set(P.x,0,-P.y);
-  STREAM.acc+=dt; if(STREAM.acc<0.35) return; STREAM.acc=0;
-  const ti=(x,y)=>{ const [la,lo]=toLatLon(x,y); return [Math.floor(lo/STREAM.lonStep), Math.floor(la/STREAM.latStep)]; };
+  if(STREAM.ready && Math.hypot(P.x,P.y)>6000){ rebase(); return; }
+  STREAM.acc+=dt; if(STREAM.acc<0.3) return; STREAM.acc=0;
+  const ti=(x,y)=>{ const [la,lo]=toLatLon(x,y); return [Math.floor(lon2x(lo,16)), Math.floor(lat2y(la,16))]; };
   const [cx,cy]=ti(P.x,P.y), [px,py]=ti(P.x+STREAM.vx*35, P.y+STREAM.vy*35), need=new Map();
   const want=(ix,iy,pr)=>{ const k=iy+'_'+ix; if(!need.has(k) || need.get(k).pr>pr) need.set(k,{ix,iy,pr}); };
   for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++) want(cx+dx,cy+dy,Math.hypot(dx,dy));
@@ -1257,28 +1141,39 @@ function streamTick(dt){
   for(const [k,n] of need){ let t=byIdx.get(k); if(!t){ t=newTile(n.ix,n.iy); STREAM.tiles.set(t.key,t); byIdx.set(k,t); } t.pr=n.pr; t.needed=true; }
   for(const [k,t] of byIdx) if(!need.has(k)) t.needed=false;
   const pend=[...STREAM.tiles.values()].filter(t=>t.needed && (t.state==='new' || (t.state==='error' && STREAM.t>t.retry))).sort((a,b)=>a.pr-b.pr);
-  while(STREAM.busy<2 && pend.length) loadTile(pend.shift());
+  while(STREAM.busy<3 && pend.length) loadTile(pend.shift());
   const bq=[...STREAM.tiles.values()].filter(t=>t.state==='parsed').sort((a,b)=>a.pr-b.pr); if(bq.length) buildTile(bq[0]);
   for(const t of [...STREAM.tiles.values()]){ if(!t.needed && Math.max(Math.abs(t.ix-cx),Math.abs(t.iy-cy))>2){ unloadTile(t); STREAM.tiles.delete(t.key); } }
   const loading=[...STREAM.tiles.values()].filter(t=>t.needed && t.state!=='built').length;
-  $('#areaname').textContent = loading ? `${STREAM.place} · loading ${loading} tile${loading>1?'s':''}` : STREAM.place;
+  $('#areaname').textContent = loading ? `${STREAM.place} · loading ${loading}` : STREAM.place;
+}
+// keep coordinates small however far you travel: every 6 km the world quietly re-centres on you
+function rebase(){
+  const [lat,lon]=toLatLon(P.x,P.y), keepA=P.a, keepRide=state.riding, keepDrive=state.driving;
+  if(STREAM.home) STREAM.homeLL=toLatLon(STREAM.home[0],STREAM.home[1]);
+  if(state.job){ state.job=null; P.pack.visible=false; toast('You drove out of range of your delivery, so it was cancelled.'); }
+  startStream(lat,lon,STREAM.place,true);
+  P.a=keepA; if(keepRide) setRiding(true); if(keepDrive) setDriving(true);
 }
 function stopStream(){ if(!STREAM.on) return; STREAM.on=false; for(const t of STREAM.tiles.values()) t.dead=true; STREAM.tiles.clear(); ground.position.set(0,0,0); }
-function startStream(lat,lon,name){
-  closeSheet(); stopStream();
-  STREAM.on=true; STREAM.ready=false; STREAM.lat0=lat; STREAM.lon0=lon; STREAM.kx=111320*Math.cos(lat*Math.PI/180); STREAM.ky=110540;
-  STREAM.latStep=0.0036; STREAM.lonStep=+(0.0036/Math.cos(lat*Math.PI/180)).toFixed(5); STREAM.tiles=new Map(); STREAM.home=null; STREAM.place=name; STREAM.errors=0; STREAM.netFail=0; STREAM.acc=1; STREAM.vx=STREAM.vy=0;
+function startStream(lat,lon,name,quiet){
+  if(!quiet) closeSheet(); stopStream();
+  STREAM.on=true; STREAM.ready=!!quiet; STREAM.lat0=lat; STREAM.lon0=lon; STREAM.kx=111320*Math.cos(lat*Math.PI/180); STREAM.ky=110540;
+  STREAM.tiles=new Map(); STREAM.place=name; STREAM.errors=0; STREAM.netFail=0; STREAM.acc=1; if(!quiet){ STREAM.vx=STREAM.vy=0; STREAM.home=null; STREAM.homeLL=null; }
+  STREAM.home = STREAM.homeLL ? toLocal(STREAM.homeLL[0],STREAM.homeLL[1]) : null;
   W={stream:true, half:1e6, title:'Live: '+name, label:name, source:'osm', buildings:[], roads:[], areas:[], pois:[], crossings:[], trees:[], spots:[]};
   scene.remove(worldGroup); worldGroup=new THREE.Group(); scene.add(worldGroup);
   nightMats.length=0; VNIGHT.forEach(([m,x])=>nightMats.push({mat:m,max:x})); for(const k in FAC) nightMats.push({mat:FAC[k],max:FACNIGHT[k]}); SIGNMATS.forEach(m=>nightMats.push({mat:m,max:1.1})); vendMats.forEach(m=>nightMats.push({mat:m,max:0.35}));
-  solids=[]; cars=[]; coins=[]; spots=[]; chunks=[]; labelables=[]; marker=null; state.job=null; carRoads=[];
+  solids=[]; cars=[]; coins=[]; spots=[]; chunks=[]; labelables=[]; marker=null; if(!quiet) state.job=null; carRoads=[];
   bGrid=new Grid(); sGrid=new Grid(); roadGrid=new Grid(); ground.scale.set(8000,8000,1);
   worldGroup.add(P.model); P.pack.visible=false; P.x=0; P.y=0; STREAM.lx=0; STREAM.ly=0;
+  if(P.car) worldGroup.add(P.car); if(P.boat) worldGroup.add(P.boat);
   const rg=new THREE.BufferGeometry(), rp=new Float32Array(1500*3); for(let i=0;i<1500;i++){ rp[i*3]=(Math.random()-.5)*70; rp[i*3+1]=Math.random()*30; rp[i*3+2]=(Math.random()-.5)*70; }
   rg.setAttribute('position', new THREE.BufferAttribute(rp,3)); rain=new THREE.Points(rg,new THREE.PointsMaterial({color:0xaac4e2, size:0.09, transparent:true, opacity:.75})); rain.visible=false; rain.frustumCulled=false; worldGroup.add(rain);
-  initCrowd(); mapLayer=null; setRiding(false); updateJobPill();
-  $('#credit').innerHTML='Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:inherit">OpenStreetMap contributors</a>';
-  $('#areaname').textContent=name; $('#busy').textContent='Loading the map around you…'; $('#busy').hidden=false; state.paused=true;
+  initCrowd(); mapLayer=null; STREAM.mm=null; if(!quiet){ setRiding(false); setDriving(false); } updateJobPill();
+  $('#credit').innerHTML='<a href="https://openfreemap.org" target="_blank" rel="noopener" style="color:inherit">OpenFreeMap</a> © <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener" style="color:inherit">OpenMapTiles</a> · Data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:inherit">OpenStreetMap contributors</a>';
+  $('#areaname').textContent=name;
+  if(!quiet){ $('#busy').textContent='Loading the map around you…'; $('#busy').hidden=false; state.paused=true; }
   worldLat=lat; worldLon=lon; pendingTitle=name;
 }
 /* --- the minimap and city map draw what's loaded around you --- */
@@ -1286,9 +1181,10 @@ function bbOf(pts){ let a=1e9,b=1e9,c=-1e9,d=-1e9; for(const p of pts){ a=Math.m
 function drawStreamMap(ctx,S,Vw){
   const vx=P.x-Vw/2, vy=P.y+Vw/2, k=S/Vw, X=x=>(x-vx)*k, Y=y=>(vy-y)*k, x1=vx+Vw, y0=vy-Vw;
   ctx.fillStyle='#c9c6bd'; ctx.fillRect(0,0,S,S);
-  const poly=(pts,col)=>{ ctx.fillStyle=col; ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1]))); ctx.closePath(); ctx.fill(); };
+  const ring=r=>{ r.forEach((p,i)=>i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1]))); ctx.closePath(); };
+  const poly=(pts,col,holes)=>{ ctx.fillStyle=col; ctx.beginPath(); ring(pts); if(holes) holes.forEach(ring); ctx.fill('evenodd'); };
   const hit=bb=>bb[2]>vx && bb[0]<x1 && bb[3]>y0 && bb[1]<vy;
-  for(const a of W.areas){ a.bb=a.bb||bbOf(a.pts); if(hit(a.bb)) poly(a.pts,{grass:'#8cbf6f',water:'#6fb2df',parking:'#8a8d94',road:'#4a4e57'}[a.kind]||'#ddd2bd'); }
+  for(const a of W.areas){ a.bb=a.bb||bbOf(a.pts); if(hit(a.bb)) poly(a.pts,{grass:'#8cbf6f',water:'#6fb2df',parking:'#8a8d94',road:'#4a4e57'}[a.kind]||'#ddd2bd',a.holes); }
   ctx.lineCap='round'; ctx.lineJoin='round';
   for(const kd of ['rail','footway','pedestrian','road']) for(const r of W.roads){ if(r.kind!==kd) continue; r.bb=r.bb||bbOf(r.pts); if(!hit(r.bb)) continue; ctx.strokeStyle={road:'#4a4e57',rail:'#6e6258',footway:'#e8e3d7',pedestrian:'#e0d4bd'}[kd]; ctx.lineWidth=Math.max(1.5,r.w*k); ctx.beginPath(); r.pts.forEach((p,i)=>i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1]))); ctx.stroke(); }
   const seen=new Set(); for(const b of bGrid.rect(vx,y0,x1,vy)){ if(seen.has(b)) continue; seen.add(b); poly(b.pts, b.kind&&KIND[b.kind]?KIND[b.kind].color:'#f3f1ec'); }
@@ -1297,13 +1193,108 @@ function drawStreamMap(ctx,S,Vw){
 async function placeSearch(q){ const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&q='+encodeURIComponent(q),{headers:{'Accept-Language':'en'}}); const j=await r.json();
   return j.map(o=>({name:String(o.display_name).split(',').slice(0,2).join(',').trim(), lat:+o.lat, lon:+o.lon})); }
 
+/* --- OpenFreeMap vector tiles (OpenMapTiles schema, zoom 14) decoded in a background worker --- */
+const MVT_SRC=`let TPL=null, DB=null;
+function db(){ if(DB) return DB; DB=new Promise(res=>{ try{ const r=indexedDB.open('citylife-mvt',1); r.onupgradeneeded=()=>r.result.createObjectStore('t'); r.onsuccess=()=>res(r.result); r.onerror=()=>res(null); }catch(e){ res(null); } }); return DB; }
+async function cget(k){ const d=await db(); if(!d) return null; return new Promise(res=>{ try{ const q=d.transaction('t').objectStore('t').get(k); q.onsuccess=()=>{ const v=q.result; res(v && Date.now()-v.t<30*864e5 ? v.b : null); }; q.onerror=()=>res(null); }catch(e){ res(null); } }); }
+async function cput(k,b){ const d=await db(); if(!d) return; try{ d.transaction('t','readwrite').objectStore('t').put({t:Date.now(),b},k); }catch(e){} }
+async function tpl(){ if(TPL) return TPL; const r=await fetch('https://tiles.openfreemap.org/planet'); if(!r.ok) throw new Error('tilejson '+r.status); const j=await r.json(); TPL=j.tiles[0]; return TPL; }
+const TD=new TextDecoder();
+function varint(s){ let v=0, m=1, b; do{ b=s.b[s.p++]; v+=(b&0x7f)*m; m*=128; }while(b>=0x80); return v; }
+function skip(s,wt){ if(wt===0) varint(s); else if(wt===1) s.p+=8; else if(wt===2){ const l=varint(s); s.p+=l; } else if(wt===5) s.p+=4; }
+function str(s){ const l=varint(s), t=TD.decode(s.b.subarray(s.p,s.p+l)); s.p+=l; return t; }
+function packed(s){ const l=varint(s), e=s.p+l, o=[]; while(s.p<e) o.push(varint(s)); return o; }
+function value(s,end){ let v=null; while(s.p<end){ const k=varint(s), f=k>>3, wt=k&7;
+  if(f===1) v=str(s); else if(f===2){ v=new DataView(s.b.buffer,s.b.byteOffset+s.p,4).getFloat32(0,true); s.p+=4; } else if(f===3){ v=new DataView(s.b.buffer,s.b.byteOffset+s.p,8).getFloat64(0,true); s.p+=8; }
+  else if(f===4||f===5) v=varint(s); else if(f===6){ const n=varint(s); v=(n%2)?-(n+1)/2:n/2; } else if(f===7) v=!!varint(s); else skip(s,wt); } return v; }
+function layers(buf){ const s={b:buf,p:0}, out=[]; while(s.p<buf.length){ const k=varint(s), f=k>>3, wt=k&7; if(f!==3){ skip(s,wt); continue; } const l=varint(s), end=s.p+l;
+    const L={name:'',keys:[],vals:[],feats:[],ext:4096}; while(s.p<end){ const k2=varint(s), f2=k2>>3, w2=k2&7;
+      if(f2===1) L.name=str(s); else if(f2===2){ const fl=varint(s); L.feats.push([s.p,s.p+fl]); s.p+=fl; } else if(f2===3) L.keys.push(str(s)); else if(f2===4){ const vl=varint(s), ve=s.p+vl; L.vals.push(value(s,ve)); s.p=ve; } else if(f2===5) L.ext=varint(s); else skip(s,w2); }
+    s.p=end; out.push(L); } return {s,out}; }
+function feature(s,a,b){ s.p=a; const F={tags:[],type:0,geom:[]}; while(s.p<b){ const k=varint(s), f=k>>3, wt=k&7; if(f===2) F.tags=packed(s); else if(f===3) F.type=varint(s); else if(f===4) F.geom=packed(s); else skip(s,wt); } return F; }
+function rings(g){ const out=[]; let x=0,y=0,cur=null; for(let i=0;i<g.length;){ const c=g[i++], id=c&7, n=c>>3;
+    if(id===1||id===2){ for(let j=0;j<n;j++){ const dx=g[i++], dy=g[i++]; x+=(dx>>>1)^-(dx&1); y+=(dy>>>1)^-(dy&1); if(id===1){ if(cur) out.push(cur); cur=[[x,y]]; } else cur.push([x,y]); } }
+    else if(id===7 && cur) cur.push(cur[0]); } if(cur) out.push(cur); return out; }
+const area=r=>{ let s=0; for(let i=0;i<r.length-1;i++) s+=r[i][0]*r[i+1][1]-r[i+1][0]*r[i][1]; return s/2; };
+function polys(rs){ const out=[]; let cur=null; for(const r of rs){ const a=area(r); if(a>0){ cur=[r]; out.push(cur); } else if(cur && a<0) cur.push(r); } return out; }
+const HW={motorway:'motorway',trunk:'trunk',primary:'primary',secondary:'secondary',tertiary:'tertiary',minor:'residential',service:'service',track:'track'};
+const FOOD=['restaurant','fast_food','bar','beer','ice_cream','food_court','pub'], SHOPC=['shop','clothing_store','grocery','alcohol_shop','bakery','books','gift','jewelry','shoes','mobile_phone','electronics','pharmacy','department_store','hairdresser','furniture','toys','music','stationery','florist','sports','optician','cosmetics'];
+function poiTags(a){ const c=a.class, sc=a.subclass, t={}, nm=a['name:en']||a.name_en||a.name; if(nm) t.name=nm;
+  if(sc==='convenience'||c==='convenience'){ t.shop='convenience'; return t; }
+  if(c==='cafe'){ t.amenity='cafe'; return t; } if(FOOD.includes(c)){ t.amenity=c==='beer'?'pub':c; return t; }
+  if(c==='police'){ t.amenity='police'; return t; } if(c==='theatre'){ t.amenity='theatre'; return t; } if(c==='cinema'){ t.amenity='cinema'; return t; }
+  if(c==='railway' && (sc==='station'||sc==='halt'||sc==='subway')){ t.railway='station'; return t; } if(sc==='subway_entrance'||c==='entrance'){ t.railway='subway_entrance'; return t; }
+  if(['attraction','monument','artwork','castle','memorial','viewpoint'].includes(c)||['attraction','monument','artwork','memorial'].includes(sc)){ t.tourism='artwork'; return t; }
+  if(c==='place_of_worship'){ t.amenity='place_of_worship'; if(a.subclass) t.religion=a.subclass; return t; }
+  if(SHOPC.includes(c)){ t.shop=sc||c; return t; } if(c==='grocery'||c==='supermarket'){ t.shop='supermarket'; return t; }
+  return null; }
+onmessage=async ev=>{ const {id,x,y}=ev.data;
+  try{ const key='14/'+x+'/'+y; let buf=await cget(key);
+    if(!buf){ const u=(await tpl()).replace('{z}',14).replace('{x}',x).replace('{y}',y); const r=await fetch(u); if(r.status===204||r.status===404){ buf=new Uint8Array(0); } else { if(!r.ok) throw new Error('tile '+r.status); buf=new Uint8Array(await r.arrayBuffer()); } cput(key,buf); }
+    const cells={}, N=16384;
+    const put=(el,bb)=>{ for(let cx=Math.max(x*4,Math.floor(bb[0]*4));cx<=Math.min(x*4+3,Math.floor(bb[2]*4));cx++) for(let cy=Math.max(y*4,Math.floor(bb[1]*4));cy<=Math.min(y*4+3,Math.floor(bb[3]*4));cy++){ const k=cx+'_'+cy; (cells[k]||(cells[k]=[])).push(el); } };
+    const {s,out}=layers(buf);
+    for(const L of out){ const E=L.ext||4096;
+      const ll=p=>{ const gx=x+p[0]/E, gy=y+p[1]/E; return {lon:gx/N*360-180, lat:Math.atan(Math.sinh(Math.PI*(1-2*gy/N)))*180/Math.PI}; };
+      const bbOf=pts=>{ let a=1e9,b=1e9,c=-1e9,d=-1e9; for(const p of pts){ const gx=x+p[0]/E, gy=y+p[1]/E; if(gx<a)a=gx; if(gy<b)b=gy; if(gx>c)c=gx; if(gy>d)d=gy; } return [a,b,c,d]; };
+      for(const [a0,b0] of L.feats){ const F=feature(s,a0,b0), A={}; for(let i=0;i<F.tags.length;i+=2) A[L.keys[F.tags[i]]]=L.vals[F.tags[i+1]];
+        const rs=rings(F.geom); if(!rs.length) continue;
+        if(L.name==='building' && F.type===3){ if(A.hide_3d) continue; const t={building:'yes'}; if(A.render_height) t.height=A.render_height; if(A.render_min_height) t.min_height=A.render_min_height; if(A.colour) t['building:colour']=A.colour;
+          for(const P of polys(rs)) put({type:'way',tags:t,geometry:P[0].map(ll)},bbOf(P[0])); }
+        else if(L.name==='transportation'){ const c=A.class; if(A.brunnel==='tunnel') continue; let t=null;
+          if(c==='rail'||c==='transit') t={railway:A.subclass==='subway'?'subway':(A.subclass==='tram'?'tram':'rail')};
+          else if(HW[c]) t={highway:HW[c]}; else if(c==='path') t={highway:A.subclass==='pedestrian'?'pedestrian':(A.subclass==='cycleway'?'cycleway':(A.subclass==='steps'?'steps':'footway'))};
+          if(!t) continue; if(A.oneway===1) t.oneway='yes'; else if(A.oneway===-1) t.oneway='-1';
+          if(F.type===3){ if(t.highway){ for(const P of polys(rs)) put({type:'area',kind:'plaza',rings:P.map(r=>r.map(ll))},bbOf(P[0])); } continue; }
+          for(const r of rs) put({type:'way',tags:t,geometry:r.map(ll)},bbOf(r)); }
+        else if((L.name==='water'||L.name==='park'||L.name==='landcover'||L.name==='landuse') && F.type===3){
+          let kind=null; if(L.name==='water') kind='water'; else if(L.name==='park') kind='grass';
+          else if(L.name==='landcover' && ['grass','wood','forest','park'].includes(A.class)) kind='grass'; else if(L.name==='landuse' && ['pitch','playground','cemetery','garden'].includes(A.class)) kind='grass';
+          if(!kind) continue; for(const P of polys(rs)) put({type:'area',kind,rings:P.map(r=>r.map(ll))},bbOf(P[0])); }
+        else if(L.name==='poi' && F.type===1){ const t=poiTags(A); if(!t) continue; const p=rs[0][0], q=ll(p); put({type:'node',lat:q.lat,lon:q.lon,tags:t},bbOf([p])); }
+      } }
+    postMessage({id,ok:true,cells}); }
+  catch(e){ postMessage({id,ok:false,error:String(e&&e.message||e)}); } };`;
+let MVT_W=null, MVT_FAILED=false; const MVT_REQ=new Map(); let MVT_ID=0;
+function mvtWorker(){ if(MVT_W || MVT_FAILED) return MVT_W;
+  try{ MVT_W=new Worker(URL.createObjectURL(new Blob([MVT_SRC],{type:'text/javascript'}))); MVT_W.onmessage=e=>{ const cb=MVT_REQ.get(e.data.id); if(cb){ MVT_REQ.delete(e.data.id); cb(e.data); } };
+    MVT_W.onerror=()=>{ MVT_FAILED=true; MVT_W=null; for(const cb of MVT_REQ.values()) cb({ok:false,error:'worker'}); MVT_REQ.clear(); }; }
+  catch(e){ MVT_FAILED=true; } return MVT_W; }
+function mvtParent(px,py){ const k=px+'_'+py; let p=MVT_PARENTS.get(k); if(p) return p;
+  const w=mvtWorker(); p=w ? new Promise(res=>{ const id=++MVT_ID; MVT_REQ.set(id,res); w.postMessage({id,x:px,y:py}); }) : Promise.resolve({ok:false,error:'no worker'});
+  MVT_PARENTS.set(k,p); p.then(r=>{ if(!r.ok) MVT_PARENTS.delete(k); });
+  while(MVT_PARENTS.size>28) MVT_PARENTS.delete(MVT_PARENTS.keys().next().value);
+  return p; }
+const lon2x=(lon,z)=>(lon+180)/360*Math.pow(2,z), lat2y=(lat,z)=>{ const r=lat*Math.PI/180; return (1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*Math.pow(2,z); };
+const x2lon=(x,z)=>x/Math.pow(2,z)*360-180, y2lat=(y,z)=>Math.atan(Math.sinh(Math.PI*(1-2*y/Math.pow(2,z))))*180/Math.PI;
+
+/* ---------------- getting around: boat on water, rental car, taxi, train and flights ---------------- */
+const IS_USD=fmtYen(1).startsWith('$'), CAR_PRICE=IS_USD?79:8000;
+function inWater(x,y){ for(const a of W.areas){ if(a.kind!=='water') continue; a.bb=a.bb||bbOf(a.pts); const b=a.bb; if(x<b[0]||x>b[2]||y<b[1]||y>b[3]) continue; if(pip(x,y,a.pts) && !(a.holes||[]).some(h=>pip(x,y,h))) return true; } return false; }
+function makeBoat(){ const g=new THREE.Group(); VB(g,cmat('#f4f2ee'),1.6,0.6,4.2,0,0.25,0); VB(g,cmat('#c8333b'),1.62,0.15,4.22,0,0.52,0); VB(g,cmat('#3e6fc4'),1.2,0.7,1.2,0,0.88,-0.6); VB(g,cmat('#f4f2ee'),1.0,0.1,0.8,0,0.62,1.7); return g; }
+function hasCar(){ return state.carDay===state.day; }
+function setDriving(on){ state.driving=!!on && hasCar(); if(state.driving && state.riding) setRiding(false);
+  if(!P.car){ P.car=makeVehicle('sedan').m; worldGroup.add(P.car); } P.car.visible=state.driving;
+  const b=$('#carBtn'); if(b){ b.hidden=!hasCar(); b.textContent=state.driving?'🚶 Walk':'🚗 Drive'; b.setAttribute('aria-pressed',String(state.driving)); } }
+function toggleCar(){ if(!state.started) return; if(!hasCar()){ toast('Rent a car in the phone’s Travel tab first'); return; } setDriving(!state.driving); }
+function hereLL(){ if(W && W.stream) return toLatLon(P.x,P.y); if(W && W.center) return W.center; return [worldLat,worldLon]; }
+function kmBetween(a,b){ const R=6371, t=Math.PI/180, dLa=(b[0]-a[0])*t, dLo=(b[1]-a[1])*t, x=Math.sin(dLa/2)**2+Math.cos(a[0]*t)*Math.cos(b[0]*t)*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.sqrt(x)); }
+function tripFor(here,o){ const km=kmBetween(here,[o.lat,o.lon]);
+  if(km<30) return {km, mode:'Taxi', em:'🚕', hrs:km/30+0.1, price:Math.round(IS_USD?4+km*2.2:500+km*400)};
+  if(km<500) return {km, mode:'Train', em:'🚆', hrs:km/150+0.3, price:Math.round(IS_USD?10+km*0.25:200+km*25)};
+  return {km, mode:'Flight', em:'✈️', hrs:1.5+km/800, price:Math.round(IS_USD?79+km*0.08:9000+km*12)}; }
+function travelTo(o,t){
+  if(!spend(t.price)) return; closeSheet(); $('#busy').textContent=`${t.em} ${t.mode} to ${o.name}…`; $('#busy').hidden=false; state.paused=true;
+  setTimeout(()=>{ passTime(t.hrs*60); while(state.min>=1440){ state.min-=1440; state.day++; } startStream(o.lat,o.lon,o.name); }, 1800);
+}
+
 /* ---------------- world build ---------------- */
 let W=null, bGrid=null, sGrid=null, solids=[], npcs=[], cars=[], carRoads=[], coins=[], spots=[], marker=null, rain=null, chunks=[], labelables=[];
 const P={x:0,y:0,a:0,phase:0,model:null,pack:null,bike:null};
 let mapLayer=null, mapPPM=1;
 
 function addSolid(x,y,r){ const o={x,y,r,tile:CURTILE}; solids.push(o); sGrid.add(o,x-r-1,y-r-1,x+r+1,y+r+1); }
-const STY={ brick:{fh:3.1,bay:3.0,ground:'shopfront',par:0.9}, limestone:{fh:3.6,bay:3.3,ground:'lobby',par:1.1}, house:{fh:2.8,bay:3.2,ground:null,par:0}, apartment:{fh:2.9,bay:3.4,ground:'lobby',par:0.9}, office:{fh:3.6,bay:3.6,ground:'lobby',par:0.9},
+const STY={ house:{fh:2.8,bay:3.2,ground:null,par:0}, apartment:{fh:2.9,bay:3.4,ground:'lobby',par:0.9}, office:{fh:3.6,bay:3.6,ground:'lobby',par:0.9},
   glass:{fh:3.8,bay:3,ground:'lobby',par:0.6}, mixed:{fh:3.3,bay:3.2,ground:'shopfront',par:0.8}, wood:{fh:3.6,bay:2.8,ground:null,par:0}, warehouse:{fh:5,bay:5,ground:null,par:0.4} };
 function obb(pts){ let best=null;
   for(let i=0;i<pts.length;i++){ const a=pts[i], b=pts[(i+1)%pts.length]; if(Math.hypot(b[0]-a[0],b[1]-a[1])<0.3) continue; const ang=Math.atan2(b[1]-a[1],b[0]-a[0]), c=Math.cos(ang), s=Math.sin(ang);
@@ -1316,8 +1307,8 @@ function styleFor(b, host){
   if(m==='glass') return 'glass'; if(m==='wood') return 'wood';
   if(['temple','shrine','church','pagoda'].includes(t) || k==='shrine') return 'wood';
   if(['house','detached','semidetached_house','terrace','bungalow','hut','cabin'].includes(t)) return 'house';
-  if(['apartments','residential','dormitory'].includes(t)) return 'brick';
-  if(['retail','commercial','kiosk','supermarket'].includes(t) || ['konbini','food','cafe','shop','fun','theater'].includes(k)) return 'brick';
+  if(['apartments','residential','dormitory'].includes(t)) return 'apartment';
+  if(['retail','commercial','kiosk','supermarket'].includes(t) || ['konbini','food','cafe','shop','fun'].includes(k)) return 'mixed';
   if(t==='office') return 'office';
   if(t==='train_station' || k==='station') return 'glass';
   if(['industrial','warehouse','garage','garages','parking','shed','service','roof','storage_tank'].includes(t)) return 'warehouse';
@@ -1326,12 +1317,11 @@ function styleFor(b, host){
 }
 function finishBuilding(b, i, host){
   const r=hash(i*1.37+b.pts.length*0.71), area=Math.abs(polyArea(b.pts)), tagged=b.tagH>0;
-  let st=b.style0||styleFor(b,host);
+  let st=styleFor(b,host);
   if(!st){ // nothing tagged: guess from the footprint, the way Tokyo blocks usually work
-    if(tagged) st = b.tagH>45 ? (r<.5?'glass':'office') : b.tagH>12 ? (r<.6?'brick':'limestone') : 'brick';
-    else if(area<260) st='brick'; else if(area<900) st=r<.5?'brick':(r<.8?'limestone':'office'); else st=r<.5?'office':'glass';
+    if(tagged) st = b.tagH>45 ? (r<.5?'glass':'office') : b.tagH>12 ? (r<.6?'apartment':'mixed') : (area<130?'house':'apartment');
+    else if(area<110) st='house'; else if(area<260) st=r<.55?'apartment':'mixed'; else if(area<900) st=r<.5?'apartment':(r<.8?'mixed':'office'); else st=r<.6?'office':'glass';
   }
-  if(st==='office' && !(b.tagH>60) && !b.style0 && hash(i*2.1)<0.4) st='limestone';
   const S=STY[st]; b.style=st;
   let shape=String(b.roofShape||'').toLowerCase();
   if(!shape) shape = st==='house' ? (r<.55?'gabled':'hipped') : st==='wood' ? 'hipped' : (st==='warehouse' && r<.4 ? 'gabled' : 'flat');
@@ -1348,7 +1338,7 @@ function finishBuilding(b, i, host){
   if(shape!=='flat'){ roofH = b.roofH>0 ? b.roofH : b.roofLevels>0 ? b.roofLevels*2.6 : (ob ? clamp(ob.w*0.3,1.2,4.5) : clamp(Math.sqrt(area)*0.25,1.2,6));
     if(shape==='dome' && !(b.roofH>0)) roofH=clamp(Math.sqrt(area)*0.4,2,20); }
   let levels=b.levels>0?b.levels:null;
-  if(!tagged && !levels) levels = st==='brick'?4+Math.floor(r*3) : st==='limestone'?8+Math.floor(r*10) : st==='house'?(r<.8?2:3) : st==='apartment'?3+Math.floor(r*4)+(area>500?3:0) : st==='mixed'?3+Math.floor(r*5) : st==='office'?5+Math.floor(r*8) : st==='glass'?10+Math.floor(r*15) : 1;
+  if(!tagged && !levels) levels = st==='house'?(r<.8?2:3) : st==='apartment'?3+Math.floor(r*4)+(area>500?3:0) : st==='mixed'?3+Math.floor(r*5) : st==='office'?5+Math.floor(r*8) : st==='glass'?10+Math.floor(r*15) : 1;
   const gH = S.ground && minH<0.5 ? (st==='glass'||st==='office'?4.4:3.8) : 0;
   let h;
   if(tagged) h=b.tagH;
@@ -1443,7 +1433,6 @@ function buildMass(acc, b, idx, isShop){
     for(let j=0;j<k*4 && placed<k;j++){ const x=b.minx+hash(idx*7.1+j)*(b.maxx-b.minx), y=b.miny+hash(idx*3.7+j*1.3)*(b.maxy-b.miny); if(pip(x,y,pts) && polyDist(x,y,pts)>1.3){ PROPS.ac.push([x,y,roofZ,hash(idx+j)*3]); placed++; } }
     if(st==='apartment' && hash(idx+11)<0.55){ for(let j=0;j<6;j++){ const x=lerp(b.cx,b.minx+hash(idx+j*5)*(b.maxx-b.minx),0.6), y=lerp(b.cy,b.miny+hash(idx+j*9)*(b.maxy-b.miny),0.6); if(pip(x,y,pts) && polyDist(x,y,pts)>1.6){ PROPS.tank.push([x,y,roofZ]); break; } } }
     if(h>45 && hash(idx+13)<0.6 && pip(b.cx,b.cy,pts)) PROPS.ant.push([b.cx,b.cy,roofZ]);
-    if((st==='brick'||st==='limestone') && h<80 && b.area>70 && hash(idx+17)<0.6){ for(let j=0;j<6;j++){ const x=lerp(b.cx,b.minx+hash(idx+j*3)*(b.maxx-b.minx),0.5), y=lerp(b.cy,b.miny+hash(idx+j*7)*(b.maxy-b.miny),0.5); if(pip(x,y,pts) && polyDist(x,y,pts)>2.2){ PROPS.wt.push([x,y,roofZ]); break; } } }
   }
   return {gTop, roofZ};
 }
@@ -1487,7 +1476,7 @@ function buildDetails(acc, b, idx, z){
   const want=[ox,0,-oy];
   const at=(s,o,zz)=>T3(a[0]+dx*s+ox*o, a[1]+dy*s+oy*o, zz);
   // door
-  if(['house','apartment','wood','office','glass','warehouse','brick','limestone'].includes(st) || (st==='mixed' && !isShop)){
+  if(['house','apartment','wood','office','glass','warehouse'].includes(st) || (st==='mixed' && !isShop)){
     const w=st==='warehouse'?3.6:(st==='glass'||st==='office'?2:1.1), hgt=st==='warehouse'?3.6:2.15, sc=len*t;
     if(len>w+0.8){ const s0=clamp(sc-w/2,0.3,len-w-0.3); quad(acc,MI.door,at(s0,0.05,0),at(s0+w,0.05,0),at(s0+w,0.05,hgt),at(s0,0.05,hgt),[0,0],[0,0],[0,0],[0,0],WHITE,want); }
   }
@@ -1497,14 +1486,13 @@ function buildDetails(acc, b, idx, z){
     quad(acc,MI.awning,at(m,0.02,zt),at(len-m,0.02,zt),at(len-m,1.2,zb),at(m,1.2,zb),[0,0],[0,0],[0,0],[0,0],ac,[0,1,0]);
   }
   // vertical signboards on mixed-use buildings
-  if(b.kind==='theater' && len>6){ const mw=Math.min(len-2,14); PROPS.marq.push({x:a[0]+dx*len/2+ox*1.3, y:a[1]+dy*len/2+oy*1.3, z:z.gTop+0.5, w:mw, ang:Math.atan2(oy,ox)}); }
-  if((st==='mixed' && b.levelsN>=3 && len>3) || b.kind==='theater'){
+  if(st==='mixed' && b.levelsN>=3 && len>3){
     const s0=0.7+hash(idx+31)*0.5, z0=z.gTop+0.4, z1=Math.min(b.h-b.par-0.4, z0+Math.min(b.levelsN-1,4)*b.fh*0.95);
     if(z1>z0+2){ const ci=Math.floor(hash(idx+41)*SIGNC.length); PROPS.sign[ci].push({x:a[0]+dx*s0+ox*0.6, y:a[1]+dy*s0+oy*0.6, z0, z1, ang:Math.atan2(oy,ox)}); }
   }
 }
 function buildBuildings(){
-  buildRoadGrid(); PROPS.ac=[]; PROPS.tank=[]; PROPS.ant=[]; PROPS.wt=[]; PROPS.marq=[]; BILL.acc=[]; BILL.tickAcc=[]; PROPS.sign=SIGNC.map(()=>[]);
+  buildRoadGrid(); PROPS.ac=[]; PROPS.tank=[]; PROPS.ant=[]; PROPS.sign=SIGNC.map(()=>[]);
   const CH=100, map=new Map();
   const accFor=(x,y)=>{ const ix=Math.floor(x/CH), iy=Math.floor(y/CH), key=ix*1000+iy; let c=map.get(key); if(!c){ c={acc:[], cx:(ix+.5)*CH, cy:(iy+.5)*CH}; map.set(key,c); } return c.acc; };
   W.buildings.forEach((b,i)=>{
@@ -1512,7 +1500,7 @@ function buildBuildings(){
     try{
       if(b.parts && b.parts.length){ b.parts.forEach((p,j)=>{ p.area=Math.abs(polyArea(p.pts)); let a=1e9,c=-1e9,d=1e9,e=-1e9; for(const q of p.pts){ a=Math.min(a,q[0]); c=Math.max(c,q[0]); d=Math.min(d,q[1]); e=Math.max(e,q[1]); } p.minx=a; p.maxx=c; p.miny=d; p.maxy=e;
           const z=buildMass(acc,p,i*31+j,isShop); if(p.base<0.5 && j===0) buildDetails(acc,Object.assign({},p,{kind:b.kind,entrance:b.entrance}),i,z); }); }
-      else { const z=buildMass(acc,b,i,isShop); buildDetails(acc,b,i,z); if(b.billboard||b.billboardAll) buildBillboards(b,i); }
+      else { const z=buildMass(acc,b,i,isShop); buildDetails(acc,b,i,z); }
     }catch(err){ /* skip shapes that can't be built */ }
     if(b.name) labelables.push({x:b.cx,y:b.cy,z:b.h+2.6,text:b.name,color:KIND[b.kind]?KIND[b.kind].color:'#454c5c',sprite:null});
   });
@@ -1529,12 +1517,6 @@ function buildBuildings(){
   const legs=instanced(new THREE.BoxGeometry(1.4,0.6,1.4), poleMat, PROPS.tank, (o,p)=>o.position.copy(V(p[0],p[1],p[2]+0.3)));
   const an=instanced(new THREE.CylinderGeometry(0.06,0.1,7,6), poleMat, PROPS.ant, (o,p)=>o.position.copy(V(p[0],p[1],p[2]+3.5)));
   for(const im of [ac,tk,legs,an]) if(im) im.castShadow=false;
-  instanced(new THREE.CylinderGeometry(1.5,1.5,2.8,12), cmat('#7a5a3e'), PROPS.wt, (o,p)=>o.position.copy(V(p[0],p[1],p[2]+3.3)));
-  instanced(new THREE.ConeGeometry(1.65,1.2,12), cmat('#4a3a2e'), PROPS.wt, (o,p)=>o.position.copy(V(p[0],p[1],p[2]+5.3)));
-  const legL=[]; for(const p of PROPS.wt) for(const [ox,oy] of [[-1,-1],[1,-1],[1,1],[-1,1]]) legL.push([p[0]+ox,p[1]+oy,p[2]]);
-  const lg=instanced(new THREE.CylinderGeometry(0.08,0.08,1.9,5), cmat('#2a2a2a'), legL, (o,p)=>o.position.copy(V(p[0],p[1],p[2]+0.95))); if(lg) lg.castShadow=false;
-  const mq=instanced(new THREE.BoxGeometry(1,1,1), new THREE.MeshBasicMaterial({color:0xffe6a0}), PROPS.marq, (o,p)=>{ o.position.copy(V(p.x,p.y,p.z)); o.rotation.y=p.ang+Math.PI/2; o.scale.set(p.w,1.1,2.4); });
-  finishBillboards();
   PROPS.sign.forEach((list,ci)=>{ const im=instanced(new THREE.BoxGeometry(1,1,1), SIGNMATS[ci], list, (o,p)=>{ o.position.copy(V(p.x,p.y,(p.z0+p.z1)/2)); o.rotation.y=p.ang; o.scale.set(1.1,p.z1-p.z0,0.32); }); if(im) im.castShadow=false; });
 }
 function instanced(geo, mat, list, setup){ if(!list.length) return null; const im=new THREE.InstancedMesh(geo,mat,list.length), o=new THREE.Object3D(); list.forEach((p,i)=>{ o.position.set(0,0,0); o.rotation.set(0,0,0); o.scale.set(1,1,1); setup(o,p,i); o.updateMatrix(); im.setMatrixAt(i,o.matrix); }); im.castShadow=true; worldGroup.add(im); return im; }
@@ -1542,7 +1524,7 @@ function instanced(geo, mat, list, setup){ if(!list.length) return null; const i
 function buildContent(){
   const lim=W.half+45;
   // areas, merged by kind
-  const areaTris={}; for(const a of W.areas){ (areaTris[a.kind]=areaTris[a.kind]||[]); polyTris(a.pts, areaTris[a.kind]); }
+  const areaTris={}; for(const a of W.areas){ (areaTris[a.kind]=areaTris[a.kind]||[]); polyTris(a.pts, areaTris[a.kind], a.holes); }
   for(const k in areaTris){ const m=new THREE.Mesh(flatGeom(areaTris[k], ({road:0.07, plaza:0.05, grass:0.03, water:0.03, parking:0.035})[k]||0.05), mats[k]||mats.plaza); m.receiveShadow=true; worldGroup.add(m); }
   // streets
   for(const [k,y] of [['rail',0.04],['footway',0.09],['pedestrian',0.1],['road',0.07]]){ const list=W.roads.filter(r=>r.kind===k); if(!list.length) continue; const m=new THREE.Mesh(flatGeom(stripTris(list,lim,true),y), mats[k]); m.receiveShadow=true; worldGroup.add(m); }
@@ -1577,7 +1559,6 @@ function buildContent(){
         for(const [x,z] of [[-.13,.32],[.13,.32],[-.13,-.32],[.13,-.32]]) B(0.1,0.4,0.1,x,1.0,z); d.position.copy(V(p.x,p.y,0)); d.rotation.y=-0.6; worldGroup.add(d); }
       else { const a=new THREE.Mesh(new THREE.IcosahedronGeometry(0.6,0), mats.bronze); a.position.copy(V(p.x,p.y,1.6)); a.castShadow=true; worldGroup.add(a); }
       addSolid(p.x,p.y,0.85);
-    } else if(p.kiosk && (p.kind==='subway'||p.kind==='cart'||p.kind==='koban')){ buildStreetThing(p);
     } else if(p.kiosk){
       const k=KIND[p.kind]||KIND.shop; const m=new THREE.Mesh(new THREE.BoxGeometry(2.2,2.6,2.2), new THREE.MeshLambertMaterial({color:k.color})); m.position.copy(V(p.x,p.y,1.3)); m.castShadow=true; worldGroup.add(m);
       labelables.push({x:p.x,y:p.y,z:4,text:p.name||k.label,color:k.color,sprite:null,small:true}); addSolid(p.x,p.y,1.3);
@@ -1585,19 +1566,18 @@ function buildContent(){
   }
   // street lamps
   const lampPts=[];
-  for(const r of W.roads.filter(r=>r.kind==='road' && r.w>=(W.noPoles?6:9))){
+  for(const r of W.roads.filter(r=>r.kind==='road' && r.w>=9)){
     const run=clipRun(r.pts, W.half+18); if(run.length<2) continue; const pl=polyline(run);
     for(let s=6;s<pl.len && lampPts.length<3000;s+=24){ const q=pl.at(s), side=(Math.floor(s/24)%2)?1:-1; const x=q.x-q.dy*(r.w/2+0.9)*side, y=q.y+q.dx*(r.w/2+0.9)*side;
-      if(blocked(x,y,0.3)) continue; lampPts.push([x,y]); addSolid(x,y,0.12); }
+      if(blocked(x,y,0.3) || inWater(x,y)) continue; lampPts.push([x,y]); addSolid(x,y,0.12); }
   }
   instanced(new THREE.CylinderGeometry(0.07,0.09,5,6), mats.post, lampPts, (o,p)=>o.position.copy(V(p[0],p[1],2.5)));
   const bulbs=instanced(new THREE.SphereGeometry(0.22,8,6), bulbMat, lampPts, (o,p)=>o.position.copy(V(p[0],p[1],5.1))); if(bulbs) bulbs.castShadow=false;
-  // utility poles and overhead wires along the narrow streets (Manhattan buries its wires)
-  if(!W.noPoles){
+  // utility poles and overhead wires along the narrow streets
   const poles=[], wire=[];
   for(const r of W.roads){ if(r.kind!=='road' || r.w>=9) continue; const run=clipRun(r.pts, W.half+18); if(run.length<2) continue; const pl=polyline(run); let prev=null;
     for(let s=5;s<pl.len && poles.length<5000;s+=27){ const q=pl.at(s), nx=-q.dy, ny=q.dx, x=q.x+nx*(r.w/2+0.35), y=q.y+ny*(r.w/2+0.35);
-      if(blocked(x,y,0.15)){ prev=null; continue; } poles.push({x,y,nx,ny,tr:poles.length%3===0}); addSolid(x,y,0.18);
+      if(blocked(x,y,0.15) || inWater(x,y)){ prev=null; continue; } poles.push({x,y,nx,ny,tr:poles.length%3===0}); addSolid(x,y,0.18);
       if(prev && Math.hypot(prev.x-x,prev.y-y)<34){ for(const [z,o] of [[7.6,-0.65],[7.6,0.65],[7.0,0],[5.9,0.25]]){
           const ax=prev.x+prev.nx*o, ay=prev.y+prev.ny*o, bx=x+nx*o, by=y+ny*o, mx=(ax+bx)/2, my=(ay+by)/2, mz=z-0.4;
           wire.push(...T3(ax,ay,z),...T3(mx,my,mz),...T3(mx,my,mz),...T3(bx,by,z)); } }
@@ -1606,8 +1586,6 @@ function buildContent(){
   const arms=instanced(new THREE.BoxGeometry(1.6,0.12,0.12), poleMat, poles, (o,p)=>{ o.position.copy(V(p.x,p.y,7.6)); o.rotation.y=Math.atan2(p.ny,p.nx); }); if(arms) arms.castShadow=false;
   const trs=poles.filter(p=>p.tr); const tr=instanced(new THREE.CylinderGeometry(0.28,0.28,0.9,10), tankMat, trs, (o,p)=>o.position.copy(V(p.x-p.nx*0.45,p.y-p.ny*0.45,6.3))); if(tr) tr.castShadow=false;
   if(wire.length){ const wg=new THREE.BufferGeometry(); wg.setAttribute('position', new THREE.Float32BufferAttribute(wire,3)); worldGroup.add(new THREE.LineSegments(wg, new THREE.LineBasicMaterial({color:0x2a2a2a}))); }
-  }
-  buildNYC();
 }
 function buildWorld(data){
   stopStream(); W=data; prepBuildings(); sGrid=new Grid();
@@ -1620,12 +1598,12 @@ function buildWorld(data){
   const L=W.half; worldGroup.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints([V(-L,-L,0.08),V(L,-L,0.08),V(L,L,0.08),V(-L,L,0.08)]), new THREE.LineBasicMaterial({color:0xf2457a, transparent:true, opacity:0.55})));
   // player
   if(!P.model){ P.model=makePerson('#10a36d','#2b3445','#f1d2b6','#1b1714'); P.pack=new THREE.Mesh(G.pack,new THREE.MeshLambertMaterial({color:0xb9874e})); P.pack.position.set(0,1.15,-0.33); P.pack.castShadow=true; P.model.add(P.pack); P.bike=makeBike(); P.model.add(P.bike); }
-  worldGroup.add(P.model); P.pack.visible=false;
+  worldGroup.add(P.model); P.pack.visible=false; if(P.car) worldGroup.add(P.car); if(P.boat) worldGroup.add(P.boat);
   const sp=W.spawn?findSpawn(W.spawn[0],W.spawn[1]):findSpawn(0,0); P.x=sp[0]; P.y=sp[1];
   // the crowd
   initCrowd();
   // cars on the streets near you
-  carRoads=W.roads.filter(r=>r.kind==='road' && r.w>=5).map(r=>{ const pl=polyline(clipRun(r.pts,W.half+30)); pl.w=r.w; pl.ow=r.oneway||0; return pl; }).filter(pl=>pl.len>30);
+  carRoads=W.roads.filter(r=>r.kind==='road' && r.w>=5).map(r=>{ const pl=polyline(clipRun(r.pts,W.half+30)); pl.w=r.w; return pl; }).filter(pl=>pl.len>30);
   const nCar=Math.min(W.half>200?30:9, carRoads.length*3);
   for(let i=0;i<nCar;i++){ const v=makeVehicle(pickVType()); const c=Object.assign({v:0,wait:0,creep:0,blk:-1,x:null,y:null},v); c.m=v.m; if(placeCar(c,true)){ c.v=c.sp*0.5; worldGroup.add(c.m); cars.push(c); } }
   // photo spots
@@ -1649,7 +1627,7 @@ function buildWorld(data){
   rg.setAttribute('position', new THREE.BufferAttribute(rp,3)); rain=new THREE.Points(rg,new THREE.PointsMaterial({color:0xaac4e2, size:0.09, transparent:true, opacity:.75})); rain.visible=false; rain.frustumCulled=false; worldGroup.add(rain);
   spawnCoins(); drawMapLayer(); updateLabels(true);
   $('#areaname').textContent=W.label||W.title;
-  $('#credit').innerHTML = W.source==='osm' ? 'Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:inherit">OpenStreetMap contributors</a>' : 'Generated sketch of Midtown Manhattan. Load real OpenStreetMap data from the phone.';
+  $('#credit').innerHTML = W.source==='osm' ? 'Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:inherit">OpenStreetMap contributors</a>' : 'Hand-laid sketch of Shibuya. Load real OpenStreetMap data from the phone.';
   setRiding(false); updateJobPill();
 }
 function refreshSpots(){ for(const s of spots) s.g.visible=!state.album[s.key]; }
@@ -1725,6 +1703,7 @@ addEventListener('keydown',e=>{ const typing=e.target.tagName==='INPUT'||e.targe
   if(e.code==='KeyM'){ openPhone('map'); }
   if(e.code==='KeyB'){ toggleBike(); }
   if(e.code==='KeyV'){ toggleView(); }
+  if(e.code==='KeyC'){ toggleCar(); }
   if(e.code==='KeyG'){ const order=['medium','chunky','fine','off'], next=order[(order.indexOf(PIX.mode)+1)%order.length]; setGfx(next); toast(next==='off'?'Smooth graphics':`Pixel art, ${next}`); }
 });
 addEventListener('keyup',e=>{ keys[e.code]=false; });
@@ -1758,11 +1737,12 @@ $('#scrim').addEventListener('click',e=>{ if(e.target.id==='scrim') closeSheet()
 $('#phoneBtn').addEventListener('click',()=>{ if(state.started) openPhone('jobs'); });
 $('#mapwrap').addEventListener('click',()=>{ if(state.started) openPhone('map'); });
 $('#bikeBtn').addEventListener('click',()=>toggleBike());
+$('#carBtn').addEventListener('click',()=>toggleCar());
 $('#viewBtn').addEventListener('click',()=>toggleView());
 
 function hasBike(){ return state.bikeDay===state.day; }
-function setRiding(on){ state.riding=on && hasBike(); if(P.bike) P.bike.visible=state.riding; const b=$('#bikeBtn'); b.hidden=!hasBike(); b.setAttribute('aria-pressed', String(state.riding)); b.textContent=state.riding?'🚶 Walk':'🚲 Ride'; }
-function toggleBike(){ if(!state.started) return; if(!hasBike()){ toast('Get a bike share day pass at a deli or subway station first'); return; } setRiding(!state.riding); }
+function setRiding(on){ if(on && state.driving){ state.driving=false; if(P.car) P.car.visible=false; const cb=$('#carBtn'); if(cb) cb.textContent='🚗 Drive'; } state.riding=on && hasBike(); if(P.bike) P.bike.visible=state.riding; const b=$('#bikeBtn'); b.hidden=!hasBike(); b.setAttribute('aria-pressed', String(state.riding)); b.textContent=state.riding?'🚶 Walk':'🚲 Ride'; }
+function toggleBike(){ if(!state.started) return; if(!hasBike()){ toast('Rent a share bike at a konbini or station first'); return; } setRiding(!state.riding); }
 function toggleView(){ if(!state.started) return; fp=!fp; P.model.visible=!fp; $('#cross').hidden=!fp; const b=$('#viewBtn'); b.setAttribute('aria-pressed',String(fp)); b.textContent=fp?'🎥 Third person':'👁 First person';
   if(fp){ fpPitch=0; yaw=P.a; toast(isTouch?'First person. Drag to look around.':'First person. Click the view to look with the mouse, Esc to release it.'); }
   else { try{ if(document.pointerLockElement) document.exitPointerLock(); }catch(e){} } }
@@ -1771,10 +1751,10 @@ function bname(b){ return b.name || 'the marked building'; }
 function compass(dx,dy){ const a=(Math.atan2(dy,dx)*180/Math.PI+360)%360; return ['east','north-east','north','north-west','west','south-west','south','south-east'][Math.round(a/45)%8]; }
 function addEnergy(n){ state.energy=clamp(state.energy+n,0,100); if(state.energy>5) state.exhaustedWarned=false; }
 function addJoy(n){ state.joy=clamp(state.joy+n,0,100); }
-function spend(price){ if(state.yen<price){ toast('Not enough cash'); return false; } state.yen-=price; return true; }
+function spend(price){ if(state.yen<price){ toast('Not enough yen'); return false; } state.yen-=price; return true; }
 function passTime(m){ state.min+=m; }
 const bikeItem=()=> hasBike() ? {em:'🚲',name:'Your share bike',desc:'Rented for today. Press B or tap Ride.',price:0,run:()=>{ setRiding(true); return false; },toast:'Hop on!'}
-  : {em:'🚲',name:'Bike share day pass',desc:'Ride about 3 times faster than walking',price:19,run:()=>{ state.bikeDay=state.day; setRiding(true); save(); return false; },toast:'Bike rented. Press B or tap Walk to get off.'};
+  : {em:'🚲',name:'Rent a share bike for today',desc:'Ride about 3 times faster than walking',price:300,run:()=>{ state.bikeDay=state.day; setRiding(true); save(); return false; },toast:'Bike rented. Press B or tap Walk to get off.'};
 
 function itemBtn(i,it){ return `<button class="item" data-i="${i}" ${it.price>state.yen?'disabled':''}><span class="em">${it.em}</span><span class="nm">${it.name}<small>${it.desc}</small></span><span class="pr">${it.price?fmtYen(it.price):'Free'}</span></button>`; }
 function openMenu(title, sub, items){
@@ -1785,51 +1765,45 @@ function openMenu(title, sub, items){
 function menuFor(kind, name){
   const eat=(e,j,m)=>()=>{ addEnergy(e); addJoy(j||0); passTime(m||10); };
   switch(kind){
-    case 'konbini': return openMenu(name,'Open 24 hours, cat behind the counter.',[
-      {em:'🥯',name:'Bacon, egg and cheese',desc:'+40 energy, the classic',price:6.5,run:eat(40,5,8),toast:'Salt, pepper, ketchup. Perfect.'},
-      {em:'☕',name:'Deli coffee',desc:'+12 energy, +3 joy',price:2,run:eat(12,3,3),toast:'Paper cup, strong and hot.'},
-      {em:'🥪',name:'Turkey club sandwich',desc:'+45 energy',price:11,run:eat(45,4,12),toast:'Cut diagonally, as it should be.'},
-      {em:'🥤',name:'Seltzer',desc:'+8 energy',price:2,run:eat(8,1,2),toast:'Fizzy.'}, bikeItem()]);
-    case 'cafe': return openMenu(name,'Laptops, plants and a long line.',[
-      {em:'☕',name:'Oat milk latte',desc:'+35 energy, +8 joy',price:6.5,run:eat(35,8,20),toast:'Latte art and everything.'},
-      {em:'🥐',name:'Drip coffee and a croissant',desc:'+30 energy, +5 joy',price:7,run:eat(30,5,15),toast:'Flaky.'},
-      {em:'💻',name:'Freelance for an hour',desc:'Earn $40, costs 15 energy',price:0,run:()=>{ if(state.energy<15){ toast('Too tired to focus'); return; } state.yen+=40; addEnergy(-15); passTime(60); },toast:'Invoice sent: +$40'}]);
-    case 'food': return openMenu(name,'Neon sign, busy counter, fast service.',[
-      {em:'🍕',name:'Slice of pizza',desc:'+30 energy, fold it in half',price:3.5,run:eat(30,6,8),toast:'Folded and devoured.'},
-      {em:'🥞',name:'Pancakes and coffee',desc:'+60 energy, +8 joy',price:14,run:eat(60,8,30),toast:'Bottomless coffee, too.'},
-      {em:'🍔',name:'Burger and fries',desc:'+55 energy, +6 joy',price:16,run:eat(55,6,25),toast:'Messy in the best way.'}]);
-    case 'cart': return openMenu(name,'Steam, foil and a quick wave of the tongs.',[
-      {em:'🌭',name:'Hot dog with everything',desc:'+25 energy',price:4,run:eat(25,4,4),toast:'Mustard, onions, the works.'},
-      {em:'🥨',name:'Soft pretzel',desc:'+20 energy, +3 joy',price:5,run:eat(20,3,3),toast:'Salty and warm.'},
-      {em:'🍛',name:'Chicken over rice',desc:'+60 energy, extra white sauce',price:10,run:eat(60,6,10),toast:'Worth the line.'}]);
-    case 'fun': return openMenu(name,'Lights, noise and something to win.',[
-      {em:'🕹️',name:'Play for an hour',desc:'+30 joy, costs 10 energy',price:20,run:()=>{ addJoy(30); addEnergy(-10); passTime(60); },toast:'New high score!'},
-      {em:'🧸',name:'Claw machine',desc:'Try to win a plush, +6 joy',price:2,run:()=>{ addJoy(6); passTime(5); if(Math.random()<0.25){ state.trinkets.push('Claw-machine plush'); save(); toast('You won a plush!'); } },toast:'So close.'}]);
-    case 'theater': return openMenu(name,'Velvet seats, a hush, then the overture.',[
-      {em:'🎭',name:'Evening show, rush ticket',desc:'+45 joy, two and a half hours',price:49,run:()=>{ addJoy(45); addEnergy(-10); passTime(150); state.trinkets.push('Broadway playbill'); save(); },toast:'Standing ovation. Playbill saved.'},
-      {em:'🍫',name:'Snacks at the concession stand',desc:'+15 energy',price:9,run:eat(15,3,5),toast:'Overpriced, delicious.'}]);
+    case 'konbini': return openMenu(name,'Open 24 hours, as always.',[
+      {em:'🍙',name:'Salmon onigiri',desc:'+25 energy',price:150,run:eat(25,2,5),toast:'Onigiri down. Tab one, two, three.'},
+      {em:'🥫',name:'Canned coffee',desc:'+12 energy, +3 joy',price:130,run:eat(12,3,3),toast:'Hot can, cold hands, good times.'},
+      {em:'🍱',name:'Karaage bento',desc:'+55 energy, microwaved for you',price:580,run:eat(55,6,15),toast:'Bento demolished.'},
+      {em:'🥚',name:'Egg sandwich',desc:'+30 energy, +6 joy',price:260,run:eat(30,6,5),toast:'The legendary egg sando.'}, bikeItem()]);
+    case 'cafe': return openMenu(name,'Window seats facing the street.',[
+      {em:'🍵',name:'Matcha latte',desc:'+35 energy, +10 joy',price:550,run:eat(35,10,20),toast:'Matcha latte, perfectly green.'},
+      {em:'☕',name:'Pour-over coffee',desc:'+25 energy, +5 joy',price:420,run:eat(25,5,15),toast:'Coffee sipped slowly.'},
+      {em:'💻',name:'Freelance for an hour',desc:'Earn ¥900, costs 15 energy',price:0,run:()=>{ if(state.energy<15){ toast('Too tired to focus'); return; } state.yen+=900; addEnergy(-15); passTime(60); },toast:'Invoice sent: +¥900'}]);
+    case 'food': return openMenu(name,'Steam, noise and a counter seat.',[
+      {em:'🍜',name:'Tonkotsu ramen',desc:'+70 energy, +12 joy',price:950,run:eat(70,12,25),toast:'Slurped loudly, as is proper.'},
+      {em:'🍚',name:'Gyudon bowl',desc:'+45 energy',price:480,run:eat(45,4,12),toast:'Fast, cheap, filling.'},
+      {em:'🐙',name:'Takoyaki',desc:'+35 energy, +8 joy',price:600,run:eat(35,8,10),toast:'Burnt your tongue. Worth it.'}]);
+    case 'fun': return openMenu(name,'Booths, lights and a sticky tambourine.',[
+      {em:'🎤',name:'Karaoke for an hour',desc:'+30 joy, costs 10 energy',price:1200,run:()=>{ addJoy(30); addEnergy(-10); passTime(60); },toast:'You absolutely nailed the high note.'},
+      {em:'🕹️',name:'Crane game',desc:'Try to win a plush, +6 joy',price:200,run:()=>{ addJoy(6); passTime(5); if(Math.random()<0.25){ state.trinkets.push('Crane-game plush'); save(); toast('You won a plush!'); } },toast:'The claw giveth, mostly taketh.'}]);
     case 'shop': return openMenu(name,'Something small to remember the day by.',[
-      {em:'🎁',name:'Mystery souvenir',desc:'Adds a trinket to your album, +10 joy',price:15,run:()=>{ const t=pick(TRINKETS); state.trinkets.push(t); addJoy(10); passTime(15); save(); toast(`You got a ${t}`); },toast:'Bagged up'},
-      {em:'🧢',name:'City cap',desc:'+5 joy',price:12,run:()=>{ addJoy(5); passTime(5); },toast:'Very touristy. You love it.'}]);
-    case 'station': case 'subway': return openMenu(name,'Down the stairs, card ready, rumble below.',[
-      {em:'🚇',name:'Ride the subway around Manhattan',desc:'An hour of people-watching, +15 joy',price:2.9,run:()=>{ addJoy(15); passTime(60); },toast:'Stand clear of the closing doors.'},
-      {em:'🎷',name:'Listen to the platform musician',desc:'+8 joy, tip a dollar',price:1,run:()=>{ addJoy(8); passTime(10); },toast:'Great saxophone solo.'},
+      {em:'🎁',name:'Mystery souvenir',desc:'Adds a trinket to your album, +10 joy',price:800,run:()=>{ const t=pick(TRINKETS); state.trinkets.push(t); addJoy(10); passTime(15); save(); toast(`You got a ${t}`); },toast:'Wrapped beautifully'},
+      {em:'🧦',name:'Fun socks',desc:'+5 joy',price:300,run:()=>{ addJoy(5); passTime(5); },toast:'Sushi-pattern socks acquired.'}]);
+    case 'station': return openMenu(name,'Ticket gates beep in every direction.',[
+      {em:'🚃',name:'Ride the loop line',desc:'An hour of views, +15 joy',price:200,run:()=>{ addJoy(15); passTime(60); },toast:'Round and round the city.'},
+      {em:'🪑',name:'Rest on a bench',desc:'+10 energy, 30 minutes',price:0,run:()=>{ addEnergy(10); passTime(30); },toast:'A little rest.'},
       bikeItem(),
-      {em:'🗺️',name:'Travel to another neighborhood',desc:'Load any part of the world from OpenStreetMap',price:0,run:()=>{ setTimeout(()=>openPhone('world'),0); return false; },toast:'Choose where to go'}]);
-    case 'koban': return openMenu(name,'The officer points with a coffee in hand.',[
-      {em:'🧭',name:'Ask for directions',desc:'Points you to the nearest photo spot',price:0,run:()=>{ const left=spots.filter(s=>!state.album[s.key]); if(!left.length){ toast('“You’ve seen it all, pal.”'); return false; } left.sort((a,b)=>Math.hypot(a.x-P.x,a.y-P.y)-Math.hypot(b.x-P.x,b.y-P.y)); const s=left[0]; toast(`“${s.name}? About ${Math.round(Math.hypot(s.x-P.x,s.y-P.y))} m ${compass(s.x-P.x,s.y-P.y)}.”`); return false; },toast:'Directions noted'},
-      {em:'🏠',name:'Ask the way home',desc:'Where’s your apartment from here?',price:0,run:()=>{ const h=W.buildings.find(b=>b.kind==='home'); toast(`“Your place is ${Math.round(Math.hypot(h.cx-P.x,h.cy-P.y))} m ${compass(h.cx-P.x,h.cy-P.y)}.”`); return false; },toast:'Directions noted'}]);
-    case 'shrine': return openMenu(name,'Quiet pews and stained glass.',[
-      {em:'🕯️',name:'Light a candle',desc:'+15 joy',price:1,run:()=>{ addJoy(15); passTime(5); },toast:'A quiet moment.'}]);
-    case 'home': return openMenu('Your apartment','Fifth-floor walk-up. Great light, tiny kitchen.',[
+      {em:'🗺️',name:'Travel to another district',desc:'Load any part of the world from OpenStreetMap',price:0,run:()=>{ setTimeout(()=>openPhone('world'),0); return false; },toast:'Choose where to go'}]);
+    case 'koban': return openMenu(name,'The officer looks up from a paper map.',[
+      {em:'🧭',name:'Ask for directions',desc:'Points you to the nearest photo spot',price:0,run:()=>{ const left=spots.filter(s=>!state.album[s.key]); if(!left.length){ toast('“You’ve seen everything around here.”'); return false; } left.sort((a,b)=>Math.hypot(a.x-P.x,a.y-P.y)-Math.hypot(b.x-P.x,b.y-P.y)); const s=left[0]; toast(`“${s.name}? About ${Math.round(Math.hypot(s.x-P.x,s.y-P.y))} m ${compass(s.x-P.x,s.y-P.y)}.”`); return false; },toast:'Directions noted'},
+      {em:'🏠',name:'Ask the way home',desc:'Where’s your apartment from here?',price:0,run:()=>{ const h=W.buildings.find(b=>b.kind==='home'); toast(`“Your apartment is ${Math.round(Math.hypot(h.cx-P.x,h.cy-P.y))} m ${compass(h.cx-P.x,h.cy-P.y)}.”`); return false; },toast:'Directions noted'}]);
+    case 'shrine': return openMenu(name,'Gravel paths, a bell rope and quiet.',[
+      {em:'🙏',name:'Toss a coin and make a wish',desc:'+15 joy',price:5,run:()=>{ addJoy(15); passTime(5); },toast:'Two bows, two claps, one bow.'},
+      {em:'📜',name:'Draw an omikuji fortune',desc:'Will it be great luck?',price:100,run:()=>{ const f=pick(['Great blessing!','Blessing','Small blessing','Future blessing','Curse… tie it to the rack']); addJoy(f.startsWith('Curse')?-3:8); toast(`Your fortune: ${f}`); passTime(5); },toast:''}]);
+    case 'home': return openMenu('Your apartment','Tiny, tidy, yours.',[
       {em:'🛏️',name:'Sleep until morning',desc:'Restores energy, starts a new day',price:0,run:()=>{ sleep(); return false; },toast:'Good morning!'},
-      {em:'🍝',name:'Cook pasta',desc:'+30 energy, 30 minutes',price:4,run:eat(30,4,30),toast:'Simple and good.'}]);
-    case 'vending': return openMenu('Vending machine','Hums, blinks, eats dollar bills.',[
-      {em:'🥤',name:'Soda',desc:'+10 energy',price:2.5,run:eat(10,1,1),toast:'Clunk.'},
-      {em:'🍫',name:'Candy bar',desc:'+12 energy, +3 joy',price:2,run:eat(12,3,1),toast:'Clunk.'}]);
+      {em:'🍳',name:'Cook a simple dinner',desc:'+30 energy, 30 minutes',price:250,run:eat(30,4,30),toast:'Rice, egg, miso. Perfect.'}]);
+    case 'vending': return openMenu('Vending machine','Glowing, humming, endlessly patient.',[
+      {em:'🍵',name:'Green tea',desc:'+10 energy',price:130,run:eat(10,1,1),toast:'Ka-chunk.'},
+      {em:'🥤',name:'Sports drink',desc:'+14 energy',price:150,run:eat(14,1,1),toast:'Ka-chunk.'},
+      {em:'🌽',name:'Hot corn soup',desc:'+12 energy, +5 joy',price:140,run:eat(12,5,2),toast:'Shake it to get the kernels out.'}]);
   }
 }
-
 function sleep(){ if(state.min>=300) state.day++; state.min=7*60; state.energy=100; addJoy(5); newDay(); save(); toast(`Day ${state.day}. ${state.rain?'It’s raining today.':'Clear skies today.'}`); }
 function newDay(){ state.rain=Math.random()<0.3; spawnCoins(); setRiding(false); }
 
@@ -1838,7 +1812,7 @@ function newJob(){
   const bs=W.buildings, maxD=Math.min(380, W.half*1.6), minD=Math.min(40, W.half*0.5);
   for(let t=0;t<600;t++){ const a=bs[Math.floor(Math.random()*bs.length)]; if(a.kind==='home'||a.area<12||Math.hypot(a.cx-P.x,a.cy-P.y)>160) continue;
     const b=bs[Math.floor(Math.random()*bs.length)]; if(b===a||b.kind==='home'||b.area<12) continue; const d=Math.hypot(a.cx-b.cx,a.cy-b.cy); if(d<minD||d>maxD) continue;
-    const pay=Math.round((12+d*0.09)*(1+state.joy/200)*2)/2; state.job={from:a,to:b,stage:'pickup',pay}; makeMarker(a); updateJobPill(); toast(`Job accepted: pick up at ${bname(a)}`); return; }
+    const pay=Math.round((250+d*8)*(1+state.joy/200)/10)*10; state.job={from:a,to:b,stage:'pickup',pay}; makeMarker(a); updateJobPill(); toast(`Job accepted: pick up at ${bname(a)}`); return; }
   toast('No delivery jobs around here right now');
 }
 function makeMarker(b){
@@ -1860,31 +1834,38 @@ function updateJobPill(){
 }
 
 /* ---------------- phone ---------------- */
-let pendingTitle='Times Square', worldLat=40.75800, worldLon=-73.98550, worldSize=1000;
-const PRESETS=[['Times Square',40.75800,-73.98550],['Grand Central',40.75270,-73.97720],['SoHo',40.72330,-74.00300],['Greenwich Village',40.73360,-74.00270],['DUMBO, Brooklyn',40.70330,-73.98810],['Central Park South',40.76600,-73.97600]];
+let pendingTitle='Shibuya Crossing', worldLat=35.65950, worldLon=139.70055, worldSize=1000;
+const PRESETS=[['Shibuya Crossing',35.65950,139.70055],['Akihabara',35.69860,139.77300],['Asakusa',35.71140,139.79660],['Shinjuku Kabukicho',35.69390,139.70340],['Harajuku',35.67160,139.70310],['Ginza',35.67170,139.76500]];
 const SIZES=[[100,'100 m'],[300,'300 m'],[1000,'1 km']];
 function overpassURL(lat,lon,size){ const m=size/2+15, dLat=m/110540, dLon=m/(111320*Math.cos(lat*Math.PI/180)); const bb=`${(lat-dLat).toFixed(6)},${(lon-dLon).toFixed(6)},${(lat+dLat).toFixed(6)},${(lon+dLon).toFixed(6)}`;
   const q=`[out:json][timeout:${size>300?120:30}];(way(${bb});node[~"^(amenity|shop|tourism|natural|historic|entrance)$"~"."](${bb});relation["building"](${bb});relation["building:part"](${bb});relation["type"="multipolygon"](${bb}););out geom;`;
   return 'https://overpass.private.coffee/api/interpreter?data='+encodeURIComponent(q); }
 function turboURL(lat,lon,size){ return 'https://overpass-turbo.eu/?Q='+overpassURL(lat,lon,size).split('?data=')[1]+'&R'; }
 function openPhone(tab){
-  const T=[['jobs','Jobs'],['map','Map'],['album','Album'],['world','World']];
+  const T=[['jobs','Jobs'],['map','Map'],['album','Album'],['travel','Travel'],['world','World']];
   const tabs=`<div class="tabs" role="tablist">${T.map(([k,n])=>`<button role="tab" data-t="${k}" aria-selected="${tab===k}">${n}</button>`).join('')}</div>`;
   let body='';
   if(tab==='jobs'){
     const j=state.job;
     body = j ? `<p class="sub">${j.stage==='pickup'?`Pick up a package at <b>${bname(j.from)}</b>, then take it to <b>${bname(j.to)}</b>.`:`Carrying a package to <b>${bname(j.to)}</b>.`} Follow the green beam. Pays <b>${fmtYen(j.pay)}</b>.</p><button class="ghost" id="dropJob">Cancel this job</button>`
       : `<p class="sub">Delivery jobs start near you and pay more for longer runs, plus a little extra when your joy is high. A share bike makes long runs quick.</p><button class="primary" id="getJob">Find a delivery job</button>`;
-    body += `<p class="hint">Day ${state.day}. Energy ${Math.round(state.energy)}, joy ${Math.round(state.joy)}. ${hasBike()?'Your share bike is rented for today.':'Get a bike share pass at any deli or subway station.'} Sleep at your apartment (the yellow dot on the map) to start a new day.</p>`;
+    body += `<p class="hint">Day ${state.day}. Energy ${Math.round(state.energy)}, joy ${Math.round(state.joy)}. ${hasBike()?'Your share bike is rented for today.':'Rent a share bike at any konbini or station.'} Sleep at your apartment (the yellow dot on the map) to start a new day.</p>`;
   } else if(tab==='map'){
     body = `<canvas id="bigmap" width="900" height="900" aria-label="Map of ${W.label||W.title}"></canvas>
-      <div class="legend"><span><i style="background:#10a36d"></i>You and your job</span><span><i style="background:#d99a00"></i>Home and coins</span><span><i style="background:#f2457a"></i>Photo spots and shops</span><span><i style="background:#e0a400"></i>Deli</span><span><i style="background:#e0462f"></i>Food</span></div>`;
+      <div class="legend"><span><i style="background:#10a36d"></i>You and your job</span><span><i style="background:#d99a00"></i>Home and coins</span><span><i style="background:#f2457a"></i>Photo spots and shops</span><span><i style="background:#1f9ad6"></i>Konbini</span><span><i style="background:#e0462f"></i>Food</span></div>`;
+  } else if(tab==='travel'){
+    body = `<p class="sub">${W.stream?'You’re in <b>'+STREAM.place+'</b>. ':''}Walk into water to switch to a boat. Bridges work like roads.</p>
+      <button class="item" id="rentCar" ${hasCar()||state.yen<CAR_PRICE?'disabled':''}><span class="em">🚗</span><span class="nm">${hasCar()?'Your rental car':'Rent a car for today'}<small>${hasCar()?'Press C or tap Drive. Hold Shift for highway speed.':'Drive about 4 times faster than cycling'}</small></span><span class="pr">${hasCar()?'Rented':fmtYen(CAR_PRICE)}</span></button>
+      <p class="step">Go somewhere far</p>
+      <div class="field" style="grid-template-columns:1fr auto"><input id="tripQ" placeholder="A city, island or landmark" aria-label="Destination"><button class="ghost" id="tripSearch" style="margin:0;width:auto">Search</button></div>
+      <div id="tripRes"></div>
+      <p class="hint">Under 30 km you take a taxi, under 500 km a train, and anything further is a flight. The map loads live when you arrive, so this needs the game hosted on your own website.</p>`;
   } else if(tab==='album'){
     const got=spots.filter(s=>state.album[s.key]).length;
     body = `<p class="sub">Photos in ${W.label||W.title}: ${got} of ${spots.length}. Find the pink rings and stand inside them.</p><div class="album">${spots.map(s=>`<div class="${state.album[s.key]?'':'no'}"><span>${state.album[s.key]?'📸':'⬜'}</span>${state.album[s.key]?s.name:'Not found yet'}</div>`).join('')}</div>`
       + `<p class="step">Trinkets (${state.trinkets.length})</p><p class="hint">${state.trinkets.length? state.trinkets.join(', ') : 'Buy souvenirs at shops to fill this up.'}</p>`;
   } else {
-    body = `<p class="sub">You’re in <b>${W.label||W.title}</b>. ${W.source==='osm'?'Built from OpenStreetMap data.':'This is a generated sketch of Midtown around Times Square. Swap it for the real map below.'}</p>
+    body = `<p class="sub">You’re in <b>${W.label||W.title}</b>. ${W.source==='osm'?'Built from OpenStreetMap data.':'The crossing is hand-laid and the streets around it are generated. Swap it for the real map below.'}</p>
       <p class="step">Live map: go anywhere</p>
       <p class="hint">Search a place or use your location. The city downloads around you as you move, and keeps loading ahead in the direction you’re heading. This needs the game hosted on your own website, such as Vercel.</p>
       <div class="field" style="grid-template-columns:1fr auto"><input id="liveQ" placeholder="A place, street or landmark" aria-label="Search for a place"><button class="ghost" id="liveSearch" style="margin:0;width:auto">Search</button></div>
@@ -1902,7 +1883,7 @@ function openPhone(tab){
       <p class="step">3. Build the district</p>
       <label class="filebox">Choose the saved file<input type="file" id="osmFile" accept=".json,application/json,text/plain,*/*"></label>
       <details><summary>Or paste the data instead</summary><textarea id="osmPaste" placeholder='{"version":0.6, "elements":[ ... ]}'></textarea><button class="primary" id="pasteGo">Build this district</button></details>
-      <button class="ghost" id="sketchGo">Build the Times Square sketch at this size</button>
+      <button class="ghost" id="sketchGo">Build the Shibuya sketch at this size</button>
       <p class="step">Graphics</p>
       <div class="presets">${[['chunky','Pixel, chunky'],['medium','Pixel'],['fine','Pixel, fine'],['off','Smooth']].map(([k,n])=>`<button data-g="${k}" aria-pressed="${PIX.mode===k}">${n}</button>`).join('')}</div>
       <p class="hint">Tunnels and bridges are left out for now. Map data © OpenStreetMap contributors, available under the Open Database License.</p>`;
@@ -1911,6 +1892,13 @@ function openPhone(tab){
   $('#sheet').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>openPhone(b.dataset.t));
   if(tab==='map') drawBigMap();
   const gj=$('#getJob'); if(gj) gj.onclick=()=>{ newJob(); closeSheet(); };
+  if(tab==='travel'){ const rc=$('#rentCar'); if(rc) rc.onclick=()=>{ if(hasCar() || !spend(CAR_PRICE)) return; state.carDay=state.day; setDriving(true); toast('Car rented for today. Press C or tap Drive to get in or out.'); closeSheet(); };
+    const doTrip=async()=>{ const q=$('#tripQ').value.trim(); if(!q) return; const box=$('#tripRes'); box.innerHTML='<p class="hint">Searching…</p>';
+      try{ const r=await placeSearch(q), here=hereLL();
+        box.innerHTML=r.length? r.map((o,i)=>{ const t=tripFor(here,o); return `<button class="item" data-trip="${i}" ${state.yen<t.price?'disabled':''}><span class="em">${t.em}</span><span class="nm">${o.name.replace(/[<&]/g,'')}<small>${t.mode}, ${Math.round(t.km).toLocaleString('en-US')} km, about ${t.hrs<1?Math.round(t.hrs*60)+' min':t.hrs.toFixed(1)+' h'}</small></span><span class="pr">${fmtYen(t.price)}</span></button>`; }).join('') : '<p class="hint">No places found.</p>';
+        box.querySelectorAll('[data-trip]').forEach(b=>b.onclick=()=>{ const o=r[+b.dataset.trip]; travelTo(o, tripFor(hereLL(),o)); }); }
+      catch(e){ box.innerHTML='<p class="hint">Search needs the game hosted on your own website.</p>'; } };
+    $('#tripSearch').onclick=doTrip; $('#tripQ').onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); doTrip(); } }; }
   const dj=$('#dropJob'); if(dj) dj.onclick=()=>{ state.job=null; P.pack.visible=false; if(marker){worldGroup.remove(marker); marker=null;} updateJobPill(); openPhone('jobs'); };
   if(tab==='world'){
     const hint=()=>{ $('#sizeHint').textContent = `Overpass Turbo opens and runs the query for ${worldSize>=1000?'1 × 1 km':worldSize+' × '+worldSize+' m'} around that point. ${worldSize>=1000?'A full square kilometre of central Tokyo is a lot of data, so it can take a minute; if it warns about the size, choose to continue. ':''}When it finishes, click Export, then “raw OSM data” to download the file. If Turbo is busy, the mirror link downloads the same data directly (save the page with Ctrl+S).`; };
@@ -1922,14 +1910,14 @@ function openPhone(tab){
     $('#osmFile').onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>importText(r.result); r.readAsText(f); };
     $('#pasteGo').onclick=()=>importText($('#osmPaste').value);
     $('#sheet').querySelectorAll('[data-live]').forEach(b=>b.onclick=()=>{ const p=PRESETS[+b.dataset.live]; startStream(p[1],p[2],p[0]); });
-    $('#liveGeo').onclick=()=>{ if(!navigator.geolocation){ toast('Location isn’t available in this browser'); return; } toast('Finding you…'); navigator.geolocation.getCurrentPosition(p=>startStream(p.coords.latitude,p.coords.longitude,'Near you'),()=>toast('Couldn’t get your location')); };
+    $('#liveGeo').onclick=()=>{ if(!navigator.geolocation){ toast('Location isn’t available in this browser'); return; } toast('Finding you…'); navigator.geolocation.getCurrentPosition(p=>startStream(p.coords.latitude,p.coords.longitude,'Your neighbourhood'),()=>toast('Couldn’t get your location')); };
     const doSearch=async()=>{ const q=$('#liveQ').value.trim(); if(!q) return; const box=$('#liveRes'); box.innerHTML='<span class="hint">Searching…</span>';
       try{ const r=await placeSearch(q); box.innerHTML=r.length? r.map((o,i)=>`<button data-res="${i}">${o.name.replace(/[<&]/g,'')}</button>`).join('') : '<span class="hint">No places found.</span>';
         box.querySelectorAll('[data-res]').forEach(b=>b.onclick=()=>{ const o=r[+b.dataset.res]; startStream(o.lat,o.lon,o.name); }); }
       catch(e){ box.innerHTML='<span class="hint">Search needs the game hosted on your own website.</span>'; } };
     $('#liveSearch').onclick=doSearch; $('#liveQ').onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); doSearch(); } };
     $('#sheet').querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{ setGfx(b.dataset.g); $('#sheet').querySelectorAll('[data-g]').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); });
-    $('#sketchGo').onclick=()=>{ closeSheet(); busy(()=>{ buildWorld(sketchWorld(worldSize)); toast(`Built the Times Square sketch at ${worldSize>=1000?'1 km':worldSize+' m'}`); }); };
+    $('#sketchGo').onclick=()=>{ closeSheet(); busy(()=>{ buildWorld(sketchWorld(worldSize)); toast(`Built the Shibuya sketch at ${worldSize>=1000?'1 km':worldSize+' m'}`); }); };
   }
 }
 function busy(fn){ $('#busy').hidden=false; setTimeout(()=>{ try{ fn(); }catch(e){ toast(e.message||'Something went wrong building the map'); } $('#busy').hidden=true; },60); }
@@ -1958,14 +1946,14 @@ function findAction(){
   return null;
 }
 function takePhoto(s){
-  state.album[s.key]=true; refreshSpots(); addJoy(8); state.yen+=5; const f=$('#flash'); f.style.transition='none'; f.style.opacity=0.9; requestAnimationFrame(()=>{ f.style.transition=''; f.style.opacity=0; });
-  const got=spots.filter(x=>state.album[x.key]).length; toast(`Photo saved: ${s.name} (${got}/${spots.length}), +$5`);
-  if(got===spots.length){ state.yen+=50; setTimeout(()=>toast('Album complete! +$50'),900); }
+  state.album[s.key]=true; refreshSpots(); addJoy(8); state.yen+=200; const f=$('#flash'); f.style.transition='none'; f.style.opacity=0.9; requestAnimationFrame(()=>{ f.style.transition=''; f.style.opacity=0; });
+  const got=spots.filter(x=>state.album[x.key]).length; toast(`Photo saved: ${s.name} (${got}/${spots.length}), +¥200`);
+  if(got===spots.length){ state.yen+=3000; setTimeout(()=>toast('Album complete! +¥3,000'),900); }
   save();
 }
 function talk(n){
   let line=n.line; const h=Math.floor(state.min/60)%24;
-  if(state.rain && Math.random()<.4) line='Rain again. Every deli suddenly sells umbrellas for $10.';
+  if(state.rain && Math.random()<.4) line='This rain! At least the konbini sells umbrellas for ¥500.';
   else if((h>=22||h<5) && Math.random()<.5) line='It’s late. You should get some sleep. I should too.';
   toast(`“${line}”`); if(n.talkedDay!==state.day){ n.talkedDay=state.day; addJoy(3); } n.line=pick(CROWD_LINES); n.pause=3;
 }
@@ -1997,30 +1985,33 @@ function frame(now){
   if(state.started && mag>0.08 && $('#scrim').hidden){
     const fx=Math.cos(yaw), fy=Math.sin(yaw), rx=Math.sin(yaw), ry=-Math.cos(yaw);
     let dx=fx*iy+rx*ix, dy=fy*iy+ry*ix; const l=Math.hypot(dx,dy); dx/=l; dy/=l;
-    const base=state.riding?(run?12:8.5):(run?6.2:3.4), sp=base*mag*(state.energy<=0?0.5:1);
+    P.wet=inWater(P.x,P.y);
+    const base=P.wet?(run?11:6.5):state.driving?(run?30:15):state.riding?(run?12:8.5):(run?6.2:3.4), sp=base*mag*(state.energy<=0?0.5:1), br=(state.driving&&!P.wet)?0.9:undefined;
     const steps=Math.ceil(sp*dt/0.25);
-    for(let k=0;k<steps;k++){ const nx=P.x+dx*sp*dt/steps, ny=P.y+dy*sp*dt/steps; if(!blocked(nx,P.y)) P.x=nx; if(!blocked(P.x,ny)) P.y=ny; }
+    for(let k=0;k<steps;k++){ const nx=P.x+dx*sp*dt/steps, ny=P.y+dy*sp*dt/steps; if(!blocked(nx,P.y,br)) P.x=nx; if(!blocked(P.x,ny,br)) P.y=ny; }
     const ta=Math.atan2(dy,dx); let da=ta-P.a; while(da>Math.PI) da-=Math.PI*2; while(da<-Math.PI) da+=Math.PI*2; P.a+=da*Math.min(1,dt*12);
     P.phase+=(state.riding?sp*0.8:sp)*dt*2.4; moving=1;
-    if(!state.paused){ addEnergy(-(state.riding?(run?0.3:0.12):(run?0.6:0.22))*dt*mag); if(state.energy<=0 && !state.exhaustedWarned){ state.exhaustedWarned=true; toast('You’re exhausted. Eat something or go home to sleep.'); } }
+    if(!state.paused){ addEnergy(-((state.driving||P.wet)?0.05:state.riding?(run?0.3:0.12):(run?0.6:0.22))*dt*mag); if(state.energy<=0 && !state.exhaustedWarned){ state.exhaustedWarned=true; toast('You’re exhausted. Eat something or go home to sleep.'); } }
   }
   if(fp) P.a=yaw;
   P.model.position.set(P.x,0,-P.y); P.model.rotation.y=headingRot(Math.cos(P.a),Math.sin(P.a)); animPerson(P.model,P.phase,state.riding?0.5*moving:moving);
+  { const inCar=state.driving && !P.wet; P.model.visible=!fp && !inCar; if(P.bike) P.bike.visible=state.riding && !P.wet;
+    if(P.car){ P.car.visible=inCar; if(inCar){ P.car.position.set(P.x,0,-P.y); P.car.rotation.y=P.model.rotation.y; } }
+    if(P.wet){ if(!P.boat){ P.boat=makeBoat(); worldGroup.add(P.boat); } P.boat.visible=!fp; P.boat.position.set(P.x,Math.sin(now/400)*0.06,-P.y); P.boat.rotation.y=P.model.rotation.y; } else if(P.boat) P.boat.visible=false; }
   updateCrowd(dt);
   updateVehicles(dt);
   streamTick(dt);
-  animNYC(dt);
   const t=now/1000;
-  for(let i=coins.length-1;i>=0;i--){ const c=coins[i]; if(Math.abs(c.x-P.x)>60) continue; c.m.rotation.y=t*3; if(Math.hypot(c.x-P.x,c.y-P.y)<1.2){ if(c.m.parent) c.m.parent.remove(c.m); coins.splice(i,1); state.yen+=1; toast('Found a dollar bill on the sidewalk'); } }
+  for(let i=coins.length-1;i>=0;i--){ const c=coins[i]; if(Math.abs(c.x-P.x)>60) continue; c.m.rotation.y=t*3; if(Math.hypot(c.x-P.x,c.y-P.y)<1.2){ if(c.m.parent) c.m.parent.remove(c.m); coins.splice(i,1); state.yen+=50; toast('Found a ¥50 coin'); } }
   for(const s of spots){ if(s.g.visible){ s.cam.rotation.y=t*1.5; s.cam.position.y=1.9+Math.sin(t*2)*0.15; } }
   if(marker){ marker.userData.arrow.position.y=marker.userData.h+5+Math.sin(t*3)*0.6; marker.userData.arrow.rotation.y=t*2; }
   if(rain){ rain.visible=state.rain; if(state.rain){ const a=rain.geometry.attributes.position.array; for(let i=1;i<a.length;i+=3){ a[i]-=22*dt; if(a[i]<0) a[i]+=30; } rain.geometry.attributes.position.needsUpdate=true; rain.position.set(P.x,0,-P.y); } }
   // camera, pulled in when a building is in the way
-  let d=camDist, cx, cy, ch;
+  let d=camDist+((state.driving&&!P.wet)?6:0), cx, cy, ch;
   for(; d>2.5; d-=0.75){ cx=P.x-Math.cos(yaw)*d*Math.cos(pitch); cy=P.y-Math.sin(yaw)*d*Math.cos(pitch); ch=1.6+d*Math.sin(pitch);
     let inside=false; for(const b of bGrid.at(cx,cy)){ if(cx<b.minx||cx>b.maxx||cy<b.miny||cy>b.maxy) continue; if(b.h>ch && pip(cx,cy,b.pts)){ inside=true; break; } } if(!inside) break; }
   cx=P.x-Math.cos(yaw)*d*Math.cos(pitch); cy=P.y-Math.sin(yaw)*d*Math.cos(pitch); ch=1.6+d*Math.sin(pitch);
-  if(fp){ const eye=(state.riding?1.85:1.62)+(moving?Math.sin(P.phase*2)*0.035:0), cp=Math.cos(fpPitch);
+  if(fp){ const eye=((state.driving&&!P.wet)?1.25:state.riding?1.85:1.62)+(moving?Math.sin(P.phase*2)*0.035:0), cp=Math.cos(fpPitch);
     camera.position.set(P.x,eye,-P.y); camera.lookAt(P.x+Math.cos(yaw)*cp, eye+Math.sin(fpPitch), -(P.y+Math.sin(yaw)*cp)); }
   else { camera.position.set(cx,ch,-cy); camera.lookAt(P.x,1.4,-P.y); }
   updateSky();
@@ -2036,7 +2027,7 @@ function frame(now){
   requestAnimationFrame(frame);
 }
 addEventListener('resize',()=>{ renderer.setSize(innerWidth,innerHeight); camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); });
-$('#startBtn').addEventListener('click',()=>{ $('#intro').hidden=true; state.started=true; state.paused=false; toast('Welcome to Times Square. Open the phone to find work.'); });
+$('#startBtn').addEventListener('click',()=>{ $('#intro').hidden=true; state.started=true; state.paused=false; toast('Welcome to Shibuya. Open the phone to find work.'); });
 
 const go=()=>{ setTimeout(()=>{ buildWorld(sketchWorld(1000)); state.rain=false; const s=$('#startBtn'); s.disabled=false; s.textContent='Start walking'; requestAnimationFrame(frame); },30); };
 if(document.fonts && document.fonts.ready){ Promise.race([document.fonts.ready, new Promise(r=>setTimeout(r,1500))]).then(go); } else go();
