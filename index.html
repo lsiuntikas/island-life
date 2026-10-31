@@ -12,6 +12,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; cursor
 #hud { position: fixed; right: 2.4vmin; top: 2.4vmin; display: flex; flex-direction: column; align-items: flex-end; gap: 1vmin; opacity: 0.85; pointer-events: none; }
 #mapc { width: 20vmin; height: 20vmin; border-radius: 1.4vmin; image-rendering: pixelated; background: #160e1e; box-shadow: 0 0 3vmin rgba(255,120,30,0.35); border: 1px solid rgba(255,140,40,0.35); }
 #cap { font: 600 1.5vmin -apple-system, system-ui, sans-serif; color: #ffb35a; text-shadow: 0 1px 3px rgba(0,0,0,0.7); letter-spacing: 0.02em; }
+#fear { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 1.2s ease;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0) 45%, rgba(90,0,0,0.35) 75%, rgba(40,0,0,0.75) 100%); }
+#fear.on { opacity: 1; animation: heartbeat 0.85s infinite; }
+@keyframes heartbeat { 0%, 100% { filter: brightness(1); } 12% { filter: brightness(1.6); } 24% { filter: brightness(1.05); } 36% { filter: brightness(1.45); } }
 #msg { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2vmin; opacity: 0; transition: opacity 1.6s ease; pointer-events: none; }
 #msg .big { font: italic 700 9vmin/1 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; color: #ff8a1e; letter-spacing: 0.02em; text-shadow: 0 0 2vmin rgba(255,110,0,0.75), 0 0 6vmin rgba(255,60,0,0.45); }
 #msg .small { font: 500 2.2vmin -apple-system, system-ui, sans-serif; color: #c9a6e8; letter-spacing: 0.3em; text-transform: uppercase; }
@@ -21,6 +25,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; cursor
 <body>
 <div id="stage"></div>
 <div id="hud"><canvas id="mapc" width="477" height="477"></canvas><div id="cap"></div></div>
+<div id="fear"></div>
 <div id="fade"></div>
 <div id="msg"><div class="big">Happy Halloween</div><div class="small">You found the way out</div></div>
 <div id="err"></div>
@@ -853,7 +858,7 @@ const OCTAGON = {"parts": {"floor": {"verts": 12999, "tris": 12391, "idx32": fal
   const fwd = () => ({ x: -Math.sin(p.yaw), y: Math.cos(p.yaw) });
   const yawTo = (dx, dy) => Math.atan2(-dx, dy);
   const wrapA = a => Math.atan2(Math.sin(a), Math.cos(a));
-  const AP = { mode: 'wander', path: null, i: 0, goals: 0, goalsBeforeExit: 5, pause: 0, pauseLen: 0,
+  const AP = { mode: 'wander', path: null, i: 0, goals: 0, goalsBeforeExit: 5, pause: 0, pauseLen: 0, flee: null, glance: null, nextGlance: 20, panting: 0,
     stuckT: 0, stuckX: 0, stuckY: 0, stuckN: 0, ghost: 0, fading: 0, leaveTarget: null };
   // the walking grid keeps at least 0.2 m from the stone, so the walker uses a slim body
   const BODY = 0.18;
@@ -972,11 +977,30 @@ const OCTAGON = {"parts": {"floor": {"verts": 12999, "tris": 12391, "idx32": fal
     if (AP.pause > 0) {
       AP.pause -= dt;
       const t = 1 - AP.pause / AP.pauseLen;
+      if (AP.panting > 0) {                       // out of breath: bent over, chest heaving
+        AP.panting -= dt;
+        p.look *= Math.max(0, 1 - dt * 3);
+        p.pitch += (-0.22 + Math.sin(performance.now() * 0.009) * 0.035 - p.pitch) * Math.min(1, dt * 4);
+        return false;
+      }
       p.look = Math.sin(t * Math.PI * 2) * 0.85 * Math.sin(t * Math.PI);
       p.pitch = Math.sin(t * Math.PI) * 0.06;
       return false;
     }
-    p.look *= Math.max(0, 1 - dt * 2); p.pitch *= Math.max(0, 1 - dt * 2);
+    p.pitch *= Math.max(0, 1 - dt * 2);
+    if (AP.glance) {
+      AP.glance.t += dt;
+      const k = AP.glance.t / AP.glance.len;
+      p.look = AP.glance.dir * 2.5 * Math.pow(Math.sin(Math.min(1, k) * Math.PI), 0.6);
+      if (k >= 1) AP.glance = null;
+    } else {
+      p.look *= Math.max(0, 1 - dt * 2);
+      AP.nextGlance -= dt;
+      if (AP.nextGlance <= 0 && AP.mode !== 'leave') {
+        AP.glance = { t: 0, len: AP.flee ? 1.4 : 2.4, dir: Math.random() < 0.5 ? -1 : 1 };
+        AP.nextGlance = AP.flee ? rand(4, 7) : rand(20, 45);
+      }
+    }
 
     if (AP.mode === 'leave') {
       steer(AP.leaveTarget.x, AP.leaveTarget.y, dt, 1.0);
@@ -997,6 +1021,7 @@ const OCTAGON = {"parts": {"floor": {"verts": 12999, "tris": 12391, "idx32": fal
     AP.i = bi;
     const end = path[L - 1];
     if (Math.hypot(end.x - p.x, end.y - p.y) < 0.9) {
+      if (AP.flee) { AP.path = escapePath(); AP.i = 0; return true; }
       if (AP.mode === 'exit') {
         AP.mode = 'leave';
         AP.leaveTarget = { x: D.exit[0] + out.x * 30, y: D.exit[1] + out.y * 30 };
@@ -1004,7 +1029,7 @@ const OCTAGON = {"parts": {"floor": {"verts": 12999, "tris": 12391, "idx32": fal
       }
       AP.goals++;
       if (AP.goals >= AP.goalsBeforeExit) AP.mode = 'exit';
-      if (Math.random() < 0.55) { AP.pauseLen = AP.pause = rand(3, 6); }
+      if (Math.random() < 0.55) { AP.pauseLen = AP.pause = rand(3, 6); AP.panting = 0; }
       planNext();
       return false;
     }
@@ -1013,8 +1038,9 @@ const OCTAGON = {"parts": {"floor": {"verts": 12999, "tris": 12391, "idx32": fal
     for (let j = Math.min(L - 1, AP.i + 14); j > AP.i; j--) {
       if (clearLine(p.x, p.y, path[j].x, path[j].y, 0.26)) { ti = j; break; }
     }
-    const diff = steer(path[ti].x, path[ti].y, dt);
-    const speed = WALK * Math.max(0.12, Math.cos(Math.min(diff, Math.PI / 2)));
+    const diff = steer(path[ti].x, path[ti].y, dt, AP.flee ? 3.4 : 1.5);
+    let speed = (AP.flee ? RUN : WALK) * Math.max(AP.flee ? 0.45 : 0.12, Math.cos(Math.min(diff, Math.PI / 2)));
+    if (AP.glance) speed *= AP.flee ? 0.8 : 0.4;          // slow down to look back
     stepForward(speed, dt);
     // stuck? first walk through people for a moment, then plan a new route
     AP.stuckT += dt;
@@ -1055,6 +1081,174 @@ const OCTAGON = {"parts": {"floor": {"verts": 12999, "tris": 12391, "idx32": fal
 
   window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
 
+  // ================= THE PUMPKIN-HEADED THING =================
+  // It walks your exact trail, a long way behind. Now and then you glance over
+  // your shoulder; if you see it, you run. It runs after you, but never quite
+  // catches up, and once you've lost it, it drops back and starts following again.
+  const TRAIL_STEP = 0.3, RUN = 5.2;
+  const trail = [];
+  const M = { state: 'hidden', mi: 0, x: 0, y: 0, face: 0, phase: 0, seenT: 0, cooldown: 25, unseen: 0, gapTarget: 30 };
+  const monster = (() => {
+    const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
+    const cloakM = new THREE.MeshStandardMaterial({ color: '#2a2030', roughness: 1, side: THREE.DoubleSide });
+    const sleeveM = new THREE.MeshStandardMaterial({ color: '#2a2030', roughness: 1 });
+    const boneM = new THREE.MeshStandardMaterial({ color: '#8a8470', roughness: 0.8 });
+    const mk = (g, m, parent, x = 0, y = 0, z = 0) => { const o = new THREE.Mesh(g, m); o.position.set(x, y, z); o.castShadow = true; parent.add(o); return o; };
+    // ragged cloak
+    const prof = [[0.1, 2.12], [0.26, 2.04], [0.38, 1.9], [0.36, 1.6], [0.38, 1.2], [0.46, 0.75], [0.58, 0.3], [0.66, 0.04]].map(([r, y]) => new THREE.Vector2(r, y));
+    const cloakG = new THREE.LatheGeometry(prof, 32), ca = cloakG.attributes.position;
+    for (let i = 0; i < ca.count; i++) if (ca.getY(i) < 0.1) {
+      const a = Math.atan2(ca.getZ(i), ca.getX(i));
+      ca.setY(i, ca.getY(i) + 0.12 + Math.sin(a * 9) * 0.07 + Math.sin(a * 23 + 1) * 0.05);
+    }
+    cloakG.computeVertexNormals();
+    const cloak = mk(cloakG, cloakM, body);
+    // long arms with claws
+    const limbG = (r, l) => { const g = new THREE.CylinderGeometry(r, r * 0.8, l, 7); g.translate(0, -l / 2, 0); return g; };
+    const arm = s => {
+      const sh = new THREE.Group(); sh.position.set(s * 0.36, 1.92, 0); body.add(sh);
+      mk(new THREE.SphereGeometry(0.1, 8, 6), sleeveM, sh); mk(limbG(0.065, 0.78), sleeveM, sh);
+      const el = new THREE.Group(); el.position.y = -0.78; sh.add(el); mk(limbG(0.05, 0.72), sleeveM, el);
+      const hand = new THREE.Group(); hand.position.y = -0.74; el.add(hand);
+      mk(new THREE.SphereGeometry(0.06, 8, 6), boneM, hand);
+      for (let f = 0; f < 4; f++) {
+        const c = mk(new THREE.ConeGeometry(0.014, 0.24, 5), boneM, hand, (f - 1.5) * 0.028, -0.13, 0.02);
+        c.rotation.set(Math.PI + 0.25, 0, (f - 1.5) * 0.12);
+      }
+      return { sh, el };
+    };
+    const AL = arm(1), AR = arm(-1);
+    mk(new THREE.CylinderGeometry(0.045, 0.06, 0.3, 7), boneM, body, 0, 2.18, 0);
+    // the head
+    const head = new THREE.Group(); head.position.y = 2.5; body.add(head);
+    const pk = mk(pumpkinGeo, pumpkinM, head); pk.scale.setScalar(0.42);
+    const st = mk(stemGeo, stemM, head); st.scale.setScalar(0.42);
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(glowC), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, color: '#ff7a20' }));
+    halo.scale.set(1.9, 1.9, 1); head.add(halo);
+    root.visible = false;
+    scene.add(root);
+    return { root, body, cloak, AL, AR, head };
+  })();
+  const gap = () => (trail.length - 1 - M.mi) * TRAIL_STEP;
+  function trailAt(f) {
+    const i = Math.max(0, Math.min(trail.length - 1, Math.floor(f))), j = Math.min(trail.length - 1, i + 1), t = Math.min(1, Math.max(0, f - i));
+    return { x: trail[i].x + (trail[j].x - trail[i].x) * t, y: trail[i].y + (trail[j].y - trail[i].y) * t, dx: trail[j].x - trail[i].x, dy: trail[j].y - trail[i].y };
+  }
+  // can the walker see it right now? (in front of the eyes, in range, nothing in between)
+  function monsterInView() {
+    if (M.state === 'hidden') return false;
+    const dx = M.x - p.x, dy = M.y - p.y, d = Math.hypot(dx, dy);
+    if (d > 42 || d < 1.5) return false;
+    const f = { x: -Math.sin(p.yaw + p.look), y: Math.cos(p.yaw + p.look) };
+    if ((dx * f.x + dy * f.y) / d < Math.cos(0.72)) return false;
+    return clearBetween(p.x, p.y, M.x, M.y);
+  }
+  // pick a route that leads away from it
+  function escapePath() {
+    const from = nearestWalkable(p.x, p.y);
+    if (from < 0) return null;
+    bfs(from);
+    let best = null, bestScore = -1e9;
+    for (let t = 0; t < 400 && t < 4000; t++) {
+      const k = reachList[(Math.random() * reachList.length) | 0];
+      if (prev[k] === -1 || depth[k] < 120 || depth[k] > 500) continue;
+      const path = routeTo(from, k), early = path[Math.min(path.length - 1, 16)];
+      const score = Math.hypot(early.x - M.x, early.y - M.y) * 2 + Math.hypot(path[path.length - 1].x - M.x, path[path.length - 1].y - M.y) * 0.3;
+      if (score > bestScore) { bestScore = score; best = path; }
+    }
+    return best;
+  }
+  function startFlee() {
+    AP.flee = { t: 0, unseen: 0 }; AP.pause = 0; AP.glance = null; AP.panting = 0;
+    AP.path = escapePath(); AP.i = 0;
+    M.state = 'chase';
+    $('fear').classList.add('on');
+  }
+  function endFlee() {
+    AP.flee = null;
+    AP.panting = 2.6; AP.pauseLen = AP.pause = 2.6;           // stop and catch your breath
+    AP.path = null;                                           // then carry on with the plan
+    M.state = 'stalk'; M.cooldown = rand(90, 160); M.gapTarget = 50;
+    $('fear').classList.remove('on');
+  }
+  let lastPX = null, lastPY = null;
+  function monsterTick(dt, now) {
+    // jumped to a new round? forget the old trail
+    if (lastPX !== null && Math.hypot(p.x - lastPX, p.y - lastPY) > 5) {
+      trail.length = 0; M.state = 'hidden'; monster.root.visible = false;
+      if (AP.flee) { AP.flee = null; $('fear').classList.remove('on'); }
+    }
+    lastPX = p.x; lastPY = p.y;
+    // lay the trail
+    const last = trail[trail.length - 1];
+    if (!last || Math.hypot(p.x - last.x, p.y - last.y) >= TRAIL_STEP) {
+      if (last) { const d = Math.hypot(p.x - last.x, p.y - last.y), n = Math.floor(d / TRAIL_STEP);
+        for (let k = 1; k <= n; k++) trail.push({ x: last.x + (p.x - last.x) * k / n, y: last.y + (p.y - last.y) * k / n }); }
+      else trail.push({ x: p.x, y: p.y });
+    }
+    if (trail.length > 7000) { trail.splice(0, 1000); M.mi = Math.max(0, M.mi - 1000); }
+    if (AP.mode === 'leave' || AP.fading) { monster.root.visible = M.state !== 'hidden' && monster.root.visible; }
+    M.cooldown -= dt;
+
+    if (M.state === 'hidden') {
+      // appears 40 m back along the trail, only while you aren't looking that way
+      if (trail.length * TRAIL_STEP > 40 && AP.mode !== 'leave') {
+        M.mi = trail.length - 1 - 40 / TRAIL_STEP;
+        const q = trailAt(M.mi); M.x = q.x; M.y = q.y;
+        M.state = 'stalk';
+        if (monsterInView()) M.state = 'hidden'; else monster.root.visible = true;
+      }
+      return;
+    }
+    // how fast it moves along your trail
+    const g = gap();
+    let speed;
+    if (M.state === 'chase') speed = g < 8 ? 0 : g < 13 ? 3.0 : (AP.flee && AP.flee.unseen > 1.5 ? 3.6 : 4.7);   // never actually catches you
+    else {
+      const target = AP.pause > 0 ? 16 : M.gapTarget;               // creeps closer while you stand still
+      speed = g > target ? Math.min(3.4, 1.4 + (g - target) * 0.2) : Math.max(0, (g - target + 3) * 0.4);
+      // the longer it goes unseen, the closer it dares to follow (30 m down to 13 m over a few minutes)
+      M.gapTarget += (13 - M.gapTarget) * Math.min(1, dt * (M.gapTarget > 30 ? 0.03 : 0.007));
+    }
+    // fallen far behind while unseen? quietly catch up
+    if (g > 75 && M.state === 'stalk' && !monsterInView()) M.mi = trail.length - 1 - 50 / TRAIL_STEP;
+    M.mi = Math.min(trail.length - 1, M.mi + speed * dt / TRAIL_STEP);
+    const q = trailAt(M.mi);
+    M.x = q.x; M.y = q.y;
+    if (Math.hypot(q.dx, q.dy) > 1e-4) {
+      const want = Math.atan2(q.dx, -q.dy), d = Math.atan2(Math.sin(want - M.face), Math.cos(want - M.face));
+      M.face += d * Math.min(1, dt * 5);
+    }
+    // seen?
+    const seen = monsterInView();
+    M.seenT = seen ? M.seenT + dt : 0;
+    if (M.state === 'stalk' && M.seenT > 0.3 && M.cooldown <= 0 && !AP.flee && AP.mode !== 'leave' && !AP.fading) startFlee();
+    if (AP.flee) {
+      AP.flee.t += dt;
+      AP.flee.unseen = seen ? 0 : AP.flee.unseen + dt;
+      if ((AP.flee.t > 7 && g > 20 && AP.flee.unseen > 3) || AP.flee.t > 25) endFlee();
+    }
+    // animate: a slow, swaying stalk, or a lurching run with arms reaching
+    const run = M.state === 'chase';
+    M.phase += dt * (speed * (run ? 1.7 : 2.4) + 0.4);
+    const r = monster;
+    r.root.position.set(M.x, Math.abs(Math.sin(M.phase)) * (run ? 0.09 : 0.04), -M.y);
+    r.root.rotation.y = M.face;
+    r.body.rotation.x += ((run ? 0.32 : 0.06) - r.body.rotation.x) * Math.min(1, dt * 3);
+    r.body.rotation.z = Math.sin(M.phase * 0.5) * (run ? 0.06 : 0.09);
+    r.cloak.rotation.y = Math.sin(M.phase) * 0.15;
+    const reach = run ? -1.35 : -0.15;
+    r.AL.sh.rotation.x += (reach + Math.sin(M.phase) * (run ? 0.25 : 0.35) - r.AL.sh.rotation.x) * Math.min(1, dt * 4);
+    r.AR.sh.rotation.x += (reach - Math.sin(M.phase) * (run ? 0.25 : 0.35) - r.AR.sh.rotation.x) * Math.min(1, dt * 4);
+    r.AL.sh.rotation.z = 0.12; r.AR.sh.rotation.z = -0.12;
+    r.AL.el.rotation.x = r.AR.el.rotation.x = run ? -0.25 : -0.5;
+    // head cocked to one side; it turns to stare at you when you look at it
+    const toYou = Math.atan2(p.x - M.x, -(p.y - M.y)) - M.face, ty = Math.atan2(Math.sin(toYou), Math.cos(toYou));
+    r.head.rotation.y += ((seen ? Math.max(-1.2, Math.min(1.2, ty)) : 0) - r.head.rotation.y) * Math.min(1, dt * 4);
+    r.head.rotation.z = 0.32 + Math.sin(now * 0.0007) * 0.06;
+  }
+  // ================= /THE PUMPKIN-HEADED THING =================
+
   // ---------- each frame ----------
   let lastT = performance.now(), slow = 1, running = true, looping = false;
   function frame(now) {
@@ -1064,6 +1258,7 @@ const OCTAGON = {"parts": {"floor": {"verts": 12999, "tris": 12391, "idx32": fal
     updatePeople(dt);
     halloweenTick(dt, now);
     const moving = autopilot(dt);
+    monsterTick(dt, now);
     slow += dt;
     if (slow > 0.25) {
       slow = 0;
@@ -1073,8 +1268,11 @@ const OCTAGON = {"parts": {"floor": {"verts": 12999, "tris": 12391, "idx32": fal
       reveal(p.x, p.y, 7);
       if (CFG.hud && !CFG.preview) { drawMap(p.x, p.y, p.yaw); $('cap').textContent = `🎃  ${clock}  ·  ${explored()}% explored`; }
     }
-    camera.position.set(p.x, EYE + (moving ? Math.sin(p.dist * 2.4) * 0.035 : 0), -p.y);
-    camera.rotation.set(p.pitch, p.yaw + p.look, 0, 'YXZ');
+    const fleeing = !!AP.flee;
+    camera.position.set(p.x, EYE + (moving ? Math.sin(p.dist * 2.4) * (fleeing ? 0.07 : 0.035) : 0), -p.y);
+    const fov = fleeing ? 78 : 70;
+    if (Math.abs(camera.fov - fov) > 0.05) { camera.fov += (fov - camera.fov) * Math.min(1, dt * 2.5); camera.updateProjectionMatrix(); }
+    camera.rotation.set(p.pitch, p.yaw + p.look, fleeing ? Math.sin(p.dist * 1.2) * 0.02 : 0, 'YXZ');
     renderer.render(scene, camera);
   }
   function loop() { if (looping) return; looping = true; lastT = performance.now(); requestAnimationFrame(frame); }
