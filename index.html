@@ -183,11 +183,13 @@ const OCTAGON = {"parts": {"floor": {"verts": 12999, "tris": 12391, "idx32": fal
     wall: { m: mat({ map: stoneTex, color: '#857a8e' }), uv: [[3.6, 1.6], [3.6, 1.6]] },
     top: { m: mat({ map: stoneTex, color: '#958aa2' }), uv: [[3.6, 1.6], [3.6, 0.8]] },
   };
+  let wallGeo = null;
   for (const name of ['slab', 'floor', 'wall', 'top']) {
     let g = await partGeometry(D.parts[name]);
     if (parts[name].uv) g = withUV(g, parts[name].uv[0], parts[name].uv[1]);
     g.computeVertexNormals(); g.computeBoundingSphere();
     const mesh = new THREE.Mesh(g, parts[name].m);
+    if (name === 'wall') wallGeo = g;
     mesh.receiveShadow = true; mesh.castShadow = name === 'wall' || name === 'top';
     scene.add(mesh);
   }
@@ -265,6 +267,66 @@ const OCTAGON = {"parts": {"floor": {"verts": 12999, "tris": 12391, "idx32": fal
   const stemM = new THREE.MeshStandardMaterial({ color: '#3d4a1c', roughness: 0.9 });
 
   // spots along the walls for pumpkins and gravestones (away from the walking line)
+  // ---------- exact wall surfaces ----------
+  // The 20 cm collision grid is too coarse to put things *on* a wall, so props are
+  // placed by casting rays against the real wall triangles (bucketed in 1 m cells).
+  const WT = (() => {
+    const pa = wallGeo.attributes.position.array, n = pa.length / 9;
+    const tri = new Float32Array(n * 9);          // maze coords: x, y, height
+    for (let i = 0; i < n * 3; i++) { tri[i * 3] = pa[i * 3]; tri[i * 3 + 1] = -pa[i * 3 + 2]; tri[i * 3 + 2] = pa[i * 3 + 1]; }
+    const cells = new Map();
+    for (let t = 0; t < n; t++) {
+      const o = t * 9;
+      const x0 = Math.floor(Math.min(tri[o], tri[o + 3], tri[o + 6])), x1 = Math.floor(Math.max(tri[o], tri[o + 3], tri[o + 6]));
+      const y0 = Math.floor(Math.min(tri[o + 1], tri[o + 4], tri[o + 7])), y1 = Math.floor(Math.max(tri[o + 1], tri[o + 4], tri[o + 7]));
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const k = y * 1000 + x; let a = cells.get(k); if (!a) cells.set(k, a = []); a.push(t); }
+    }
+    return { tri, cells, stamp: new Uint32Array(n), gen: 0 };
+  })();
+  // distance along a horizontal ray to the first wall triangle, plus that triangle's normal
+  function castWall(ox, oy, h, dx, dy, maxD) {
+    const { tri, cells, stamp } = WT, gen = ++WT.gen;
+    let best = maxD, bn = null;
+    for (let s = 0; s <= maxD + 0.5; s += 0.5) {
+      const list = cells.get(Math.floor(oy + dy * s) * 1000 + Math.floor(ox + dx * s));
+      if (!list) continue;
+      for (const t of list) {
+        if (stamp[t] === gen) continue; stamp[t] = gen;
+        const o = t * 9;
+        const e1x = tri[o + 3] - tri[o], e1y = tri[o + 4] - tri[o + 1], e1z = tri[o + 5] - tri[o + 2];
+        const e2x = tri[o + 6] - tri[o], e2y = tri[o + 7] - tri[o + 1], e2z = tri[o + 8] - tri[o + 2];
+        const px = dy * e2z, py = -dx * e2z, pz = dx * e2y - dy * e2x;     // dir x e2, dir = (dx, dy, 0)
+        const det = e1x * px + e1y * py + e1z * pz;
+        if (Math.abs(det) < 1e-9) continue;
+        const inv = 1 / det, sx = ox - tri[o], sy = oy - tri[o + 1], sz = h - tri[o + 2];
+        const u = (sx * px + sy * py + sz * pz) * inv; if (u < 0 || u > 1) continue;
+        const qx = sy * e1z - sz * e1y, qy = sz * e1x - sx * e1z, qz = sx * e1y - sy * e1x;
+        const v = (dx * qx + dy * qy) * inv; if (v < 0 || u + v > 1) continue;
+        const d = (e2x * qx + e2y * qy + e2z * qz) * inv;
+        if (d > 0.001 && d < best) {
+          best = d;
+          let nx = e1y * e2z - e1z * e2y, ny = e1z * e2x - e1x * e2z; const l = Math.hypot(nx, ny) || 1;
+          bn = { x: nx / l, y: ny / l };
+        }
+      }
+    }
+    if (!bn) return null;
+    if (bn.x * dx + bn.y * dy > 0) { bn.x = -bn.x; bn.y = -bn.y; }      // normal faces back at us
+    return { d: best, nx: bn.x, ny: bn.y };
+  }
+  // is there flat wall at this point of a wall plane (face point F, normal n)?
+  const flatAt = (fx, fy, nx, ny, h = 1.2) => { const r = castWall(fx + nx * 0.3, fy + ny * 0.3, h, -nx, -ny, 0.5); return r && Math.abs(r.d - 0.3) < 0.03 && r.nx * nx + r.ny * ny > 0.97; };
+  // how far a flat wall face runs from F along the wall, up to `max`
+  function flatRunFrom(fx, fy, nx, ny, side, max, h) {
+    const tx = -ny * side, ty = nx * side; let ok = 0;
+    for (let q = 0.1; q <= max + 1e-6; q += 0.1) {
+      if (!flatAt(fx + tx * q, fy + ty * q, nx, ny, h)) break;
+      if (isWall(fx + tx * q + nx * 0.25, fy + ty * q + ny * 0.25)) break;   // something sticking out
+      ok = q;
+    }
+    return ok;
+  }
+
   function wallSpots(count, spacing) {
     const spots = [], taken = new Set(), cellKey = (x, y) => `${Math.floor(x / spacing)},${Math.floor(y / spacing)}`;
     for (let t = 0; t < count * 60 && spots.length < count; t++) {
@@ -276,13 +338,12 @@ const OCTAGON = {"parts": {"floor": {"verts": 12999, "tris": 12391, "idx32": fal
         for (let d = 0.45; d < 1.0; d += 0.05) if (isWall(x + dx * d, y + dy * d)) { if (!best || d < best.d) best = { d, dx, dy }; break; }
       }
       if (!best || taken.has(cellKey(x, y))) continue;
-      let ba = Math.atan2(best.dy, best.dx), bd = best.d;
-      for (let a = ba - 0.25; a <= ba + 0.25; a += 0.02) {
-        const dx = Math.cos(a), dy = Math.sin(a);
-        for (let d = 0.4; d < bd + 0.02; d += 0.01) if (isWall(x + dx * d, y + dy * d)) { if (d < bd) { bd = d; ba = a; } break; }
-      }
+      const hit = castWall(x, y, 1.0, best.dx, best.dy, 1.4);
+      if (!hit || !flatAt(x + best.dx * hit.d, y + best.dy * hit.d, hit.nx, hit.ny, 1.0)) continue;
+      const wx = -hit.nx, wy = -hit.ny, wd = hit.d * (best.dx * wx + best.dy * wy);   // perpendicular distance
+      if (wd < 0.35) continue;
       taken.add(cellKey(x, y));
-      spots.push({ x, y, wx: Math.cos(ba), wy: Math.sin(ba), wd: bd });
+      spots.push({ x, y, wx, wy, wd });
     }
     return spots;
   }
@@ -355,6 +416,99 @@ const OCTAGON = {"parts": {"floor": {"verts": 12999, "tris": 12391, "idx32": fal
     sp.m = m4.compose(v4, q4, s4).toArray();
   }
   const refreshGraves = () => nearbyInstances(graveSpots, [graveMesh], 300);
+  // ---------- writing on the walls ----------
+  // Painted, sprayed and chalked words. Each kind is drawn once on a canvas and
+  // then stamped on flat stretches of wall all over the maze.
+  const WRITINGS = [
+    { text: 'revitwatch.com', style: 'drip',  color: '#ff7a1a', h: 0.55, w: 1 },
+    { text: 'revitwatch.com', style: 'glow',  color: '#9dff5a', h: 0.55, w: 1 },
+    { text: 'revitwatch.com', style: 'chalk', color: '#e8e4f0', h: 0.5,  w: 1 },
+    { text: 'RE',  style: 'drip',  color: '#b0101a', h: 0.95, w: 0.8 },
+    { text: 'RE',  style: 'glow',  color: '#c77dff', h: 0.9,  w: 0.6 },
+    { text: 'RFA', style: 'drip',  color: '#ff7a1a', h: 0.95, w: 0.8 },
+    { text: 'RFA', style: 'chalk', color: '#e8e4f0', h: 0.85, w: 0.6 },
+    { text: 'RFA', style: 'glow',  color: '#9dff5a', h: 0.9,  w: 0.6 },
+  ];
+  const PAINT_FONT = '"Chalkduster", "Marker Felt", "Impact", "Haettenschweiler", "DejaVu Sans Condensed", "Arial Black", sans-serif';
+  function writingCanvas(wr) {
+    const long = wr.text.length > 4, W = long ? 1024 : 512, H = 256;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const g = c.getContext('2d');
+    let size = 150;
+    g.font = `700 ${size}px ${PAINT_FONT}`;
+    size = Math.min(170, size * (W * 0.9) / g.measureText(wr.text).width);
+    g.font = `700 ${size}px ${PAINT_FONT}`;
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    const cx = W / 2, cy = H * 0.42;
+    if (wr.style === 'chalk') {
+      // many faint, slightly shifted strokes, then scratch some of it away
+      g.lineWidth = 3; g.strokeStyle = wr.color; g.fillStyle = wr.color;
+      for (let i = 0; i < 9; i++) { g.globalAlpha = 0.16; g.fillText(wr.text, cx + rand(-3, 3), cy + rand(-3, 3)); }
+      g.globalAlpha = 0.5; g.strokeText(wr.text, cx, cy);
+      g.globalAlpha = 1; g.globalCompositeOperation = 'destination-out';
+      for (let i = 0; i < 2500; i++) { g.fillStyle = `rgba(0,0,0,${rand(0.3, 0.9)})`; g.fillRect(rand(0, W), rand(0, H), rand(2, 9), rand(1, 2)); }
+      g.globalCompositeOperation = 'source-over';
+    } else {
+      // spray paint: soft overspray, then the solid letters
+      g.fillStyle = wr.color;
+      g.shadowColor = wr.color; g.shadowBlur = wr.style === 'glow' ? 22 : 10;
+      g.globalAlpha = 0.55; g.fillText(wr.text, cx, cy);
+      g.shadowBlur = 3; g.globalAlpha = 1; g.fillText(wr.text, cx, cy);
+      g.shadowBlur = 0;
+      if (wr.style === 'drip') {
+        // runs of paint from the bottom edges of the letters
+        const img = g.getImageData(0, 0, W, H).data;
+        for (let x = 2; x < W - 2; x += 3) {
+          if (Math.random() > 0.11) continue;
+          let y = H - 1; while (y > 0 && img[(y * W + x) * 4 + 3] < 200) y--;
+          if (y <= 0 || y > H * 0.8) continue;
+          const len = rand(12, 70) * (Math.random() < 0.2 ? 1.6 : 1), wd = rand(3, 7);
+          g.beginPath(); g.moveTo(x - wd / 2, y - 4); g.lineTo(x + wd / 2, y - 4);
+          g.lineTo(x + wd * 0.35, y + len); g.lineTo(x - wd * 0.35, y + len); g.closePath(); g.fill();
+          g.beginPath(); g.arc(x, y + len, wd * 0.55, 0, Math.PI * 2); g.fill();
+        }
+      }
+      // weathered: knock a little paint off the stone
+      g.globalCompositeOperation = 'destination-out';
+      for (let i = 0; i < 1400; i++) { g.fillStyle = `rgba(0,0,0,${rand(0.2, 0.7)})`; g.fillRect(rand(0, W), rand(0, H), rand(1, 4), rand(1, 4)); }
+      g.globalCompositeOperation = 'source-over';
+    }
+    return c;
+  }
+  const writingKinds = WRITINGS.map(wr => {
+    const c = writingCanvas(wr), tex = new THREE.CanvasTexture(c);
+    tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    const hM = wr.h / 0.75, wM = hM * c.width / c.height;            // letters fill about 3/4 of the canvas height
+    const glowy = wr.style === 'glow';
+    const m = new THREE.MeshStandardMaterial({ map: tex, transparent: true, depthWrite: false, roughness: 0.95,
+      emissive: new THREE.Color(glowy ? wr.color : '#000000'), emissiveMap: glowy ? tex : null, emissiveIntensity: glowy ? 0.6 : 0,
+      polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+    const mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(wM, hM), m, 60);
+    mesh.frustumCulled = false; mesh.count = 0; scene.add(mesh);
+    return { wr, wM, hM, mesh, spots: [] };
+  });
+  {
+    const total = CFG.preview ? 600 : 3600;
+    const spots = wallSpots(total, 5);
+    const kindWeights = writingKinds.map(k => k.wr.w), wsum = kindWeights.reduce((a, b) => a + b, 0);
+    for (const sp of spots) {
+      let r = Math.random() * wsum, kind = writingKinds[0];
+      for (let i = 0; i < writingKinds.length; i++) { r -= kindWeights[i]; if (r <= 0) { kind = writingKinds[i]; break; } }
+      const need = kind.wM * 0.5 * 0.92;
+      const fx = sp.x + sp.wx * sp.wd, fy = sp.y + sp.wy * sp.wd, nx = -sp.wx, ny = -sp.wy;
+      const left = flatRunFrom(fx, fy, nx, ny, -1, 1.8, 1.55), right = flatRunFrom(fx, fy, nx, ny, 1, 1.8, 1.55);
+      if (left + right < need * 2) continue;
+      // slide along the wall so the whole word fits on the flat part
+      const shift = Math.max(-left + need, Math.min(right - need, 0));
+      const tx = -sp.wy, ty = sp.wx, off = sp.wd - 0.01;
+      sp.px = sp.x + sp.wx * off + tx * shift; sp.py = sp.y + sp.wy * off + ty * shift;
+      e4.set(0, Math.atan2(-sp.wx, sp.wy), rand(-0.07, 0.07), 'YXZ'); q4.setFromEuler(e4);
+      v4.set(sp.px, rand(1.35, 1.75), -sp.py); s4.set(1, 1, 1);
+      sp.m = m4.compose(v4, q4, s4).toArray();
+      kind.spots.push(sp);
+    }
+  }
+  const refreshWriting = () => { for (const k of writingKinds) nearbyInstances(k.spots, [k.mesh], 60); };
   // pumpkins don't overlap gravestones
   {
     const gk = new Set(graveSpots.map(sp => `${Math.round(sp.px)},${Math.round(sp.py)}`));
@@ -367,7 +521,8 @@ const OCTAGON = {"parts": {"floor": {"verts": 12999, "tris": 12391, "idx32": fal
   const GLOW_R = 1.5;
   function glowPatch(sp) {
     const nx = -sp.wx, ny = -sp.wy, tx = -sp.wy, ty = sp.wx;           // n: into the corridor, t: along the wall
-    const bx = sp.x + sp.wx * (sp.wd - 0.03), by = sp.y + sp.wy * (sp.wd - 0.03);   // just in front of the wall face
+    const fx = sp.x + sp.wx * sp.wd, fy = sp.y + sp.wy * sp.wd;              // on the wall face
+    const bx = fx - sp.wx * 0.012, by = fy - sp.wy * 0.012;                     // a hair in front of it
     const pe = Math.hypot(sp.px - bx, sp.py - by);                    // pumpkin's distance from that line
     let depth = 0;
     for (let q = 0.1; q <= GLOW_R; q += 0.05) { if (isWall(bx + nx * q, by + ny * q)) break; depth = q; }
@@ -381,7 +536,8 @@ const OCTAGON = {"parts": {"floor": {"verts": 12999, "tris": 12391, "idx32": fal
       }
       return ok;
     };
-    const fl = -reach(-1, false), fr = reach(1, false), wl = -reach(-1, true), wr = reach(1, true);
+    const fl = -reach(-1, false), fr = reach(1, false);
+    const wl = -flatRunFrom(fx, fy, nx, ny, -1, GLOW_R, 0.6), wr = flatRunFrom(fx, fy, nx, ny, 1, GLOW_R, 0.6);
     const hp = sp.r * 0.74, R2 = 2 * GLOW_R, pos = [], uv = [];
     const put = (q, d, h, u, v) => { pos.push(bx + tx * q + nx * d, h, -(by + ty * q + ny * d)); uv.push(u, v); };
     // floor quad: from the wall line out into the corridor
@@ -423,7 +579,7 @@ const OCTAGON = {"parts": {"floor": {"verts": 12999, "tris": 12391, "idx32": fal
     lightGeo.setDrawRange(0, nearPumpkins.length * 12);
     for (const k of ['position', 'uv', 'color']) lightGeo.attributes[k].needsUpdate = true;
   }
-  function assignPumpkinLights() { refreshPumpkins(); refreshGraves(); refreshPumpkinLight(); }
+  function assignPumpkinLights() { refreshPumpkins(); refreshGraves(); refreshWriting(); refreshPumpkinLight(); }
   // bats circling overhead
   const bats = [];
   {
